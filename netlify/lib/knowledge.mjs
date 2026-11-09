@@ -6,12 +6,12 @@
 export const SITES = {
   portfolio: {
     name: "Ralph Garcia — Portfolio",
-    url: "https://ralph-garcia-portfolio.netlify.app/",
+    url: "https://garciaralphlawrence-svg.github.io/Ralph-Portfolio/",
     greeting: "Hi! I'm Ralph AI 👋 Ask me about Ralph's experience, projects, or any of his websites.",
     suggestions: ["What does Ralph do?", "Show me his best projects", "Is Ralph open to work?", "What is AI Analytics Studio?"],
     facts: `
 Ralph Lawrence F. Garcia — Data Science graduate (BS Data Science, Cum Laude, University of the East, 2022–2026; College Scholar; Finance Executive of the UE Data Science Society). Based in Quezon City, Philippines. Open to roles in data science, analytics and systems development, and to research or internal-tools collaborations.
-Contact: rlawrencegarcia03@gmail.com · LinkedIn: https://www.linkedin.com/in/ralph-garcia-b57814401 · GitHub: https://github.com/garciaralphlawrence-svg · CV download and contact form on the portfolio: [Contact Ralph](https://ralph-garcia-portfolio.netlify.app/#contact)
+Contact: rlawrencegarcia03@gmail.com · LinkedIn: https://www.linkedin.com/in/ralph-garcia-b57814401 · GitHub: https://github.com/garciaralphlawrence-svg · CV download and contact form on the portfolio: [Contact Ralph](https://garciaralphlawrence-svg.github.io/Ralph-Portfolio/#contact)
 Experience:
 - Data Quality Assurance Analyst, UERM Medical Center (2026): designed and built the UERM Quality Management System (QMS) portal for ISO 9001 (hospital) and ISO 21001 (academe) — Knowledge Hub (document control, search, access control, AWS S3), KPI Generator (automatic Achieved/Not Achieved status, heatmaps, approvals), Risk Register, Privacy Impact Assessment, ISO 9001 and ISO 21001 Internal Audit, Patient Safety, Clinical Pathway, RADAR records management, Quality Improvement, Customer Experience (complaints, NPS, text mining) and Huddle 360. SQL Server database design, analytics dashboards, workflow automation, testing and support. The QMS is an internal system, so it is shown only as screenshots on the portfolio.
 - Intern, Leasing & Data Department, Ayala Corporation (2026): Python automation of repetitive reporting tasks, data processing for business reports.
@@ -24,7 +24,7 @@ Projects list: UERM QMS; Future Minds Academy website + school management system
 
   studio: {
     name: "AI Analytics Studio",
-    url: "https://ralph-ai-analytics-studio.netlify.app/",
+    url: "https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/",
     greeting: "Hi! I'm Ralph AI 👋 Drop in a spreadsheet and I'll build the dashboard — or ask me how it works.",
     suggestions: ["How does this work?", "Is my data safe?", "What files can I upload?", "Try a sample dataset"],
     facts: `
@@ -35,12 +35,12 @@ Privacy & data safety (is my data safe or secure?): files are parsed in the brow
 Sample datasets: Coffee shop sales, Philippine real-estate listings, Travel bookings, School enrollment.
 Extras: dark/light theme, presentation mode, export the dashboard to PDF/print, CSV download of any chart's data.
 Tech: vanilla JavaScript, Apache ECharts, SheetJS, Netlify Functions, Claude (Anthropic) with tool use.
-Open it: [AI Analytics Studio](https://ralph-ai-analytics-studio.netlify.app/)`,
+Open it: [AI Analytics Studio](https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/)`,
   },
 
   kmm: {
     name: "KMM Travel Co.",
-    url: "https://kmm-travel-ph.netlify.app/",
+    url: "https://garciaralphlawrence-svg.github.io/KMM/",
     greeting: "Mabuhay! I'm Ralph AI 🌴 Ask me about KMM's Philippine tour packages, prices, or booking.",
     suggestions: ["What packages do you offer?", "How much is Boracay?", "How do discounts work?", "How do I book?"],
     facts: `
@@ -56,12 +56,12 @@ Tour packages (price per person, default nights):
 Destination search also covers El Nido, Coron, Chocolate Hills (Bohol), Mayon Volcano (Albay), Mount Pulag, Banaue Rice Terraces, Vigan, Intramuros, Kawasan Falls, Batanes and Siquijor.
 Dynamic discounts (combined, capped at 35% of the total): 5% for 3–4 travellers or 10% for 5+; 2% per extra night beyond the package's default; 8% for travel dates April–October.
 How to book: choose a package in "Popular Destinations", adjust the nights, click Book Now, log in, pick travellers and a date, and confirm. Custom trips: fill in the KMM Concierge Form ("Let's Talk") — destination, group type, budget, stay style, experiences, transport and dining preferences — and a travel specialist follows up by email.
-Pages: [Tour packages](https://kmm-travel-ph.netlify.app/#packages) · [Custom trip form](https://kmm-travel-ph.netlify.app/#contact)`,
+Pages: [Tour packages](https://garciaralphlawrence-svg.github.io/KMM/#packages) · [Custom trip form](https://garciaralphlawrence-svg.github.io/KMM/#contact)`,
   },
 
   islakeys: {
     name: "IslaKeys",
-    url: "https://islakeys-ph.netlify.app/",
+    url: "https://garciaralphlawrence-svg.github.io/IslaKeys/",
     greeting: "Hi! I'm Ralph AI 🔑 Ask me about IslaKeys properties, the client and broker portals, or how buying works.",
     suggestions: ["What properties are featured?", "How do I log in as a demo user?", "What can brokers do?", "Can foreigners buy property?"],
     facts: `
@@ -74,12 +74,12 @@ Portals (sign up with Client or Broker account type; sign-up has verification an
 - Admin dashboard: account totals by role, recent accounts, inquiry activity, contact-form messages, restore demo accounts.
 Demo accounts (this is a demo site): Admin admin@islakeys.ph / admin12345 · Client client.test@islakeys.ph / client123 · Broker broker.test@islakeys.ph / broker123.
 General buying note: foreigners generally can't own land in the Philippines but can own condominium units within the 40% foreign-ownership limit of a condo project — recommend confirming with a licensed broker or lawyer.
-Pages: [Home](https://islakeys-ph.netlify.app/) · [Login / Sign up](https://islakeys-ph.netlify.app/login.html)`,
+Pages: [Home](https://garciaralphlawrence-svg.github.io/IslaKeys/) · [Login / Sign up](https://garciaralphlawrence-svg.github.io/IslaKeys/login.html)`,
   },
 
   bizbuddy: {
     name: "Biz Buddy",
-    url: "https://bizbuddy-va.netlify.app/",
+    url: "https://garciaralphlawrence-svg.github.io/BizBuddy/",
     greeting: "Hi! I'm Ralph AI 💼 Ask me about hiring an executive VA, becoming a VA partner, or the demo dashboards.",
     suggestions: ["What can a VA do for me?", "How do I become a VA?", "How do I try the demo?", "What are the VA requirements?"],
     facts: `
@@ -91,7 +91,7 @@ How it works (demo app — data is saved in the visitor's browser and can be res
 - VAs sign up with application details (CV/portfolio links and a requirements checklist), apply to opportunities, work assigned tasks with chat, accept or decline call invitations, take VA courses and download completion certificates, and edit their profile (skills, tools, experience, hourly rate, availability, timezone, verification document).
 - Admins see platform stats, enquiries, VA applications (approve/reject/verify, bulk approve), task moderation (edit/delete) and CSV exports of users, tasks and enquiries.
 Demo logins (shown in the login box): Client client@bizbuddy.com / client123 · VA va@bizbuddy.com / va12345 · Admin admin@bizbuddy.com / admin123.
-Pages: [Home](https://bizbuddy-va.netlify.app/) · [Contact](https://bizbuddy-va.netlify.app/#contact)`,
+Pages: [Home](https://garciaralphlawrence-svg.github.io/BizBuddy/) · [Contact](https://garciaralphlawrence-svg.github.io/BizBuddy/#contact)`,
   },
 
   fma: {
