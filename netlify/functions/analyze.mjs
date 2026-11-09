@@ -5,6 +5,7 @@
 // calling run_query, which computes exact aggregates over every row here on
 // the server. It finishes by calling submit_dashboard / submit_answer, whose
 // chart specs the browser re-runs with the identical query engine to draw.
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import Anthropic from '@anthropic-ai/sdk';
 import { runQuery, AGGS, GRAINS, OPS } from '../lib/query.mjs';
 import { gate, json, corsHeaders, MODEL } from '../lib/shared.mjs';
@@ -14,7 +15,7 @@ const client = new Anthropic();
 const MAX_ROWS = 20000;
 const MAX_COLUMNS = 60;
 const MAX_TOOL_ROUNDS = 8;
-const TIME_BUDGET_MS = 38_000;
+const WRAP_UP_STEP = 2;  // from the 3rd step on, ask the model to deliver
 
 const nullable = (schema) => ({ anyOf: [schema, { type: 'null' }] });
 
@@ -147,8 +148,25 @@ function describeDataset(d) {
   return `Dataset: "${String(d.name || 'Untitled').slice(0, 120)}" — ${d.rows.length.toLocaleString()} rows.\n\nColumns:\n${profile}\n\nSample rows:\n${sample}`;
 }
 
+// ---- step state ---------------------------------------------------------
+// Netlify cuts a function off at ~30s, but a full analysis takes longer.
+// So each request runs ONE model step; the browser sends the returned state
+// back to continue. The state is HMAC-signed so a caller can't inject their
+// own conversation and use this endpoint as a free general-purpose AI.
+const STATE_KEY = createHash('sha256').update(`analyze-state:${process.env.STATE_SECRET || process.env.ANTHROPIC_API_KEY || ''}`).digest();
+const sign = (str) => createHmac('sha256', STATE_KEY).update(str).digest('base64url');
+function openState(state, sig, datasetHash) {
+  if (typeof state !== 'string' || typeof sig !== 'string' || state.length > 400_000) return null;
+  const expected = Buffer.from(sign(state));
+  const given = Buffer.from(sig);
+  if (expected.length !== given.length || !timingSafeEqual(expected, given)) return null;
+  const st = JSON.parse(state);
+  // Bind the state to this dataset so it can't be replayed against other data.
+  return st.datasetHash === datasetHash ? st : null;
+}
+
 export default async (req, context) => {
-  const early = gate(req, context, { limit: 20, windowMs: 10 * 60_000 });
+  const early = gate(req, context, { limit: 60, windowMs: 10 * 60_000 });
   if (early) return early;
 
   let body;
@@ -160,72 +178,75 @@ export default async (req, context) => {
   if (mode === 'ask' && !question) return json(req, 400, { error: 'question is required' });
 
   const { columns, rows } = body.dataset;
+  const datasetHash = createHash('sha256').update(JSON.stringify(columns)).update(String(rows.length)).digest('hex');
   const submitTool = mode === 'ask' ? SUBMIT_ANSWER : SUBMIT_DASHBOARD;
-  const task = mode === 'ask'
-    ? `Question: ${question}\n\nAnswer it with run_query, then call submit_answer (include a chart when it helps).`
-    : 'Explore this dataset with run_query and build the most insightful executive dashboard you can, then call submit_dashboard.';
 
-  const messages = [{ role: 'user', content: `${describeDataset(body.dataset)}\n\n${task}` }];
+  let st;
+  if (body.state) {
+    st = openState(body.state, body.sig, datasetHash);
+    if (!st || st.mode !== mode) return json(req, 400, { error: 'Invalid analysis state — please start again.' });
+  } else {
+    const task = mode === 'ask'
+      ? `Question: ${question}\n\nAnswer it with run_query, then call submit_answer (include a chart when it helps).`
+      : 'Explore this dataset with run_query (run your queries together in one step where you can) and build the most insightful executive dashboard you can, then call submit_dashboard.';
+    st = { mode, datasetHash, step: 0, queries: 0, messages: [{ role: 'user', content: `${describeDataset(body.dataset)}\n\n${task}` }] };
+  }
+  if (st.step >= MAX_TOOL_ROUNDS) return json(req, 400, { error: 'The analysis took too many steps. Please try again.' });
 
-  // The reply is streamed as newline-delimited JSON: progress events while the
-  // agent works, then one "result" (or "error"). Streaming matters — Netlify's
-  // edge drops a request that sends nothing for ~30s, and a full analysis can
-  // take longer than that. It also lets the UI show real progress.
-  const started = Date.now();
+  // Streamed as newline-delimited JSON: ping/progress/query events, then exactly
+  // one of: result | continue (with signed state) | error.
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       const send = (obj) => controller.enqueue(encoder.encode(JSON.stringify(obj) + '\n'));
       const heartbeat = setInterval(() => send({ type: 'ping' }), 5000);
-      let queries = 0;
       try {
-        for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-          send({ type: 'progress', stage: round === 0 ? 'exploring' : 'analysing', round, queries });
-          const response = await client.beta.messages.create({
-            model: MODEL,
-            max_tokens: 16000,
-            betas: ['server-side-fallback-2026-07-01'],
-            fallbacks: 'default',
-            output_config: { effort: 'low' },
-            system: SYSTEM,
-            tools: [RUN_QUERY, submitTool],
-            messages,
-          });
+        send({ type: 'progress', step: st.step, queries: st.queries });
+        const response = await client.beta.messages.create({
+          model: MODEL,
+          max_tokens: 16000,
+          betas: ['server-side-fallback-2026-07-01'],
+          fallbacks: 'default',
+          output_config: { effort: 'low' },
+          system: SYSTEM,
+          tools: [RUN_QUERY, submitTool],
+          messages: st.messages,
+        });
 
-          if (response.stop_reason === 'refusal') return send({ type: 'error', error: 'The AI declined to analyze this request.' });
-          if (response.stop_reason === 'max_tokens') return send({ type: 'error', error: 'The analysis ran too long. Try a smaller dataset or question.' });
+        if (response.stop_reason === 'refusal') return send({ type: 'error', error: 'The AI declined to analyze this request.' });
+        if (response.stop_reason === 'max_tokens') return send({ type: 'error', error: 'The analysis ran too long. Try a smaller dataset or question.' });
 
-          const toolUses = response.content.filter((b) => b.type === 'tool_use');
-          const submit = toolUses.find((b) => b.name === submitTool.name);
-          if (submit) return send({ type: 'result', mode, result: submit.input, queries, seconds: Math.round((Date.now() - started) / 1000) });
+        const toolUses = response.content.filter((b) => b.type === 'tool_use');
+        const submit = toolUses.find((b) => b.name === submitTool.name);
+        if (submit) return send({ type: 'result', mode, result: submit.input, queries: st.queries });
 
-          messages.push({ role: 'assistant', content: response.content });
-          if (!toolUses.length) {
-            // Model answered in prose without the submit tool — nudge it once more.
-            messages.push({ role: 'user', content: `Please deliver the result by calling ${submitTool.name}.` });
-            continue;
-          }
-
+        st.messages.push({ role: 'assistant', content: response.content });
+        if (!toolUses.length) {
+          // Model answered in prose without the submit tool — nudge it.
+          st.messages.push({ role: 'user', content: `Please deliver the result by calling ${submitTool.name}.` });
+        } else {
           const results = toolUses.map((tu) => {
             if (tu.name !== 'run_query') {
               return { type: 'tool_result', tool_use_id: tu.id, is_error: true, content: `Call ${submitTool.name} only on its own, after your queries.` };
             }
-            queries++;
+            st.queries++;
             try {
               const r = runQuery(rows, columns, tu.input);
-              send({ type: 'query', queries, label: describeQuery(r.spec) });
+              send({ type: 'query', queries: st.queries, label: describeQuery(r.spec) });
               return { type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify({ labels: r.labels, values: r.values, total: r.total, rowsMatched: r.rowsMatched }) };
             } catch (e) {
               return { type: 'tool_result', tool_use_id: tu.id, is_error: true, content: String(e.message || e) };
             }
           });
-          // Functions are cut off at 60s: past the time budget, ask for the result now.
-          const late = Date.now() - started > TIME_BUDGET_MS;
-          messages.push({ role: 'user', content: late
-            ? [...results, { type: 'text', text: `Time is nearly up. Call ${submitTool.name} now with what you have found.` }]
+          // After a few rounds of exploring, ask for the finished result.
+          const wrapUp = st.step >= WRAP_UP_STEP;
+          st.messages.push({ role: 'user', content: wrapUp
+            ? [...results, { type: 'text', text: `You have enough. Call ${submitTool.name} now.` }]
             : results });
         }
-        send({ type: 'error', error: 'The analysis took too many steps. Please try again.' });
+        st.step++;
+        const state = JSON.stringify(st);
+        send({ type: 'continue', state, sig: sign(state), queries: st.queries });
       } catch (err) {
         console.error('analyze error', err?.status, err?.message);
         send({ type: 'error', error: err?.status === 429 ? 'The AI is busy. Try again in a moment.' : 'The AI service is unavailable right now.' });

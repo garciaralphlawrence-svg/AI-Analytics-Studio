@@ -235,11 +235,25 @@ function payload(extra) {
   return JSON.stringify({ ...extra, dataset: { name, columns, rows } });
 }
 
-// The analyst streams newline-delimited JSON: ping / progress / query events
-// while it works, then a single result or error.
-async function callAI(body, onEvent = () => {}, timeoutMs = 75000) {
+// The analyst works in steps (each request must finish within Netlify's ~30s
+// limit). Every step streams newline-delimited JSON — ping / progress / query
+// events, then a result, an error, or "continue" with signed state that we
+// send back for the next step.
+async function callAI(extra, onEvent = () => {}, totalMs = 120000) {
+  const deadline = Date.now() + totalMs;
+  let state = null, sig = null;
+  for (let step = 0; step < 10; step++) {
+    const ev = await callStep(payload({ ...extra, state, sig }), onEvent, Math.max(5000, deadline - Date.now()));
+    if (ev.type === 'result') return ev;
+    ({ state, sig } = ev);
+    if (Date.now() > deadline) break;
+  }
+  throw Object.assign(new Error('The analysis took too long. Please try again.'), { status: 504 });
+}
+
+async function callStep(body, onEvent, timeoutMs) {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  const timer = setTimeout(() => ctrl.abort(), Math.min(timeoutMs, 45000));
   try {
     const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, signal: ctrl.signal });
     if (!res.ok || !res.body) {
@@ -262,7 +276,7 @@ async function callAI(body, onEvent = () => {}, timeoutMs = 75000) {
         buf = buf.slice(nl + 1);
         if (!line) continue;
         const ev = JSON.parse(line);
-        if (ev.type === 'result') return ev;
+        if (ev.type === 'result' || ev.type === 'continue') return ev;
         if (ev.type === 'error') throw Object.assign(new Error(ev.error), { status: 502 });
         onEvent(ev);
       }
@@ -294,7 +308,8 @@ async function runAIDashboard() {
   };
 
   try {
-    const { result, queries, seconds } = await callAI(payload({ mode: 'dashboard' }), onEvent);
+    const t0 = Date.now();
+    const { result, queries } = await callAI({ mode: 'dashboard' }, onEvent);
     if (state.dataset !== ds) return; // user moved on
     state.aiSpec = sanitizeSpec(result);
     state.view = 'ai';
@@ -303,7 +318,7 @@ async function runAIDashboard() {
     renderBoard();
     renderInsights(result.insights || [], queries);
     setSuggestions(result.questions?.length ? result.questions : starterQuestions(ds));
-    $('analystStatus').textContent = `Ran ${queries} queries on ${ds.rows.length.toLocaleString()} rows in ${seconds}s`;
+    $('analystStatus').textContent = `Ran ${queries} queries on ${ds.rows.length.toLocaleString()} rows in ${Math.round((Date.now() - t0) / 1000)}s`;
     toast('✨ AI-curated dashboard ready');
   } catch (err) {
     if (state.dataset !== ds) return;
@@ -354,7 +369,7 @@ async function ask(question) {
   scrollAnalyst();
   const ds = state.dataset;
   try {
-    const { result, queries } = await callAI(payload({ mode: 'ask', question }), (ev) => {
+    const { result, queries } = await callAI({ mode: 'ask', question }, (ev) => {
       if (ev.type === 'query') aEl.querySelector('.muted').textContent = `ran ${ev.queries} ${ev.queries === 1 ? 'query' : 'queries'}: ${ev.label}…`;
     });
     if (state.dataset !== ds) return;
