@@ -235,38 +235,66 @@ function payload(extra) {
   return JSON.stringify({ ...extra, dataset: { name, columns, rows } });
 }
 
-async function callAI(body, timeoutMs = 58000) {
+// The analyst streams newline-delimited JSON: ping / progress / query events
+// while it works, then a single result or error.
+async function callAI(body, onEvent = () => {}, timeoutMs = 75000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const res = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, signal: ctrl.signal });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
+    if (!res.ok || !res.body) {
+      const data = await res.json().catch(() => ({}));
       const err = new Error(data.error || `HTTP ${res.status}`);
       err.status = res.status;
       err.code = data.error;
       throw err;
     }
-    return data;
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let nl;
+      while ((nl = buf.indexOf('\n')) !== -1) {
+        const line = buf.slice(0, nl).trim();
+        buf = buf.slice(nl + 1);
+        if (!line) continue;
+        const ev = JSON.parse(line);
+        if (ev.type === 'result') return ev;
+        if (ev.type === 'error') throw Object.assign(new Error(ev.error), { status: 502 });
+        onEvent(ev);
+      }
+    }
+    throw Object.assign(new Error('The analysis ended unexpectedly.'), { status: 502 });
   } finally { clearTimeout(timer); }
 }
-
-const STEPS = ['Profiling every column…', 'Running queries across all rows…', 'Looking for trends and outliers…', 'Comparing segments…', 'Writing the executive summary…'];
 
 async function runAIDashboard() {
   const ds = state.dataset;
   const insights = $('insights');
-  insights.innerHTML = `<div class="thinking"><div class="think-orb"></div><div><strong>AI analyst is exploring your data</strong><ol class="steps">${STEPS.map((s) => `<li>${s}</li>`).join('')}</ol></div></div>`;
+  insights.innerHTML = `<div class="thinking"><div class="think-orb"></div><div><strong>AI analyst is exploring your data</strong>
+    <p class="think-sub muted">Reading the column profile…</p><ol class="steps"></ol></div></div>`;
   $('analystStatus').textContent = 'Analysing…';
-  const lis = [...insights.querySelectorAll('.steps li')];
-  let k = 0;
-  lis[0].classList.add('active');
-  const stepTimer = setInterval(() => {
-    if (k < lis.length - 1) { lis[k].classList.replace('active', 'done'); lis[++k].classList.add('active'); }
-  }, 3200);
+  const steps = insights.querySelector('.steps');
+  const sub = insights.querySelector('.think-sub');
+  const onEvent = (ev) => {
+    if (ev.type === 'progress') sub.textContent = ev.round === 0 ? 'Planning the analysis…' : 'Comparing results, looking for the story…';
+    if (ev.type === 'query') {
+      steps.querySelectorAll('li.active').forEach((li) => li.classList.replace('active', 'done'));
+      const li = document.createElement('li');
+      li.className = 'active';
+      li.textContent = ev.label;
+      steps.appendChild(li);
+      sub.textContent = `${ev.queries} ${ev.queries === 1 ? 'query' : 'queries'} run on ${ds.rows.length.toLocaleString()} rows`;
+      $('analystStatus').textContent = `Running query ${ev.queries}…`;
+      scrollAnalyst();
+    }
+  };
 
   try {
-    const { result, queries } = await callAI(payload({ mode: 'dashboard' }), 58000);
+    const { result, queries, seconds } = await callAI(payload({ mode: 'dashboard' }), onEvent);
     if (state.dataset !== ds) return; // user moved on
     state.aiSpec = sanitizeSpec(result);
     state.view = 'ai';
@@ -275,7 +303,7 @@ async function runAIDashboard() {
     renderBoard();
     renderInsights(result.insights || [], queries);
     setSuggestions(result.questions?.length ? result.questions : starterQuestions(ds));
-    $('analystStatus').textContent = `Ran ${queries} queries on ${ds.rows.length.toLocaleString()} rows`;
+    $('analystStatus').textContent = `Ran ${queries} queries on ${ds.rows.length.toLocaleString()} rows in ${seconds}s`;
     toast('✨ AI-curated dashboard ready');
   } catch (err) {
     if (state.dataset !== ds) return;
@@ -285,8 +313,6 @@ async function runAIDashboard() {
       ? 'The AI analyst is taking a break right now. The auto-dashboard is fully live, so try a question below in a moment.'
       : 'AI analysis isn\'t switched on for this site yet. The auto-dashboard is fully live. Explore it, filter it, export it.'}</div>`;
     $('analystStatus').textContent = state.aiAvailable ? 'Temporarily unavailable' : 'Auto mode';
-  } finally {
-    clearInterval(stepTimer);
   }
 }
 
@@ -328,7 +354,9 @@ async function ask(question) {
   scrollAnalyst();
   const ds = state.dataset;
   try {
-    const { result, queries } = await callAI(payload({ mode: 'ask', question }), 58000);
+    const { result, queries } = await callAI(payload({ mode: 'ask', question }), (ev) => {
+      if (ev.type === 'query') aEl.querySelector('.muted').textContent = `ran ${ev.queries} ${ev.queries === 1 ? 'query' : 'queries'}: ${ev.label}…`;
+    });
     if (state.dataset !== ds) return;
     aEl.innerHTML = `<div class="md">${md(result.answer || '')}</div><div class="a-meta muted">✓ ${queries} ${queries === 1 ? 'query' : 'queries'} on ${ds.rows.length.toLocaleString()} rows</div>`;
     if (result.chart && result.chart.query) {

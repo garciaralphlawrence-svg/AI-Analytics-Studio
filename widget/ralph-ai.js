@@ -231,7 +231,7 @@
             scroll();
             return text;
           }
-          text += dec.decode(r.value, { stream: true });
+          text += dec.decode(r.value, { stream: true }).replace(/\u0001/g, ''); // strip server keep-alives
           if (text.indexOf('\u0000ERROR') !== -1) { clearTimeout(timer); throw new Error('upstream'); }
           bubble.innerHTML = md(text) + '<span class="cursor"></span>';
           scroll();
@@ -255,7 +255,7 @@
   }
 
   // ---------- offline answers (keyword retrieval over kb.json) ----------
-  var STOP = 'a an the and or of to in on for with is are was be do does how what who where when which can i you me my your it this that about tell show please po ba ang ng sa mga ko mo'.split(' ');
+  var STOP = 'a an the and or of to in on for with is are was be do does how what who where when which can i you me my your it this that about tell show please he his him she her they site website web page built build made make po ba ang ng sa mga ko mo'.split(' ');
   function tokens(s) {
     return (s.toLowerCase().match(/[a-z0-9₱]+/g) || []).filter(function (w) { return w.length > 1 && STOP.indexOf(w) === -1; });
   }
