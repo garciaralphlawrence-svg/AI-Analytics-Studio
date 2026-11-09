@@ -197,6 +197,10 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .steps { margin: 8px 0 0; padding-left: 18px; color: var(--text-3); font-size: .86rem; line-height: 1.8; }
 .steps li.active { color: var(--text-1); font-weight: 600; }
 .steps li.active::marker { content: "⟳ "; }
+.think-sub { margin: 4px 0 0; font-size: .82rem; }
+.steps:empty { display: none; }
+.steps li { text-transform: none; }
+.steps li::first-letter { text-transform: uppercase; }
 .steps li.done { color: var(--good); }
 .steps li.done::marker { content: "✓ "; }
 .ins-title { margin: 2px 0 10px; font-size: .95rem; }

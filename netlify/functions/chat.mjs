@@ -61,6 +61,10 @@ export default async (req, context) => {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
+      // Until the first words arrive, send an invisible keep-alive byte every 5s:
+      // Netlify's edge drops a response that stays silent for ~30s.
+      let started = false;
+      const keepAlive = setInterval(() => { if (!started) controller.enqueue(encoder.encode('\u0001')); }, 5000);
       try {
         const s = client.beta.messages.stream({
           model: MODEL,
@@ -73,6 +77,7 @@ export default async (req, context) => {
         });
         for await (const event of s) {
           if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+            started = true;
             controller.enqueue(encoder.encode(event.delta.text));
           }
         }
@@ -85,6 +90,7 @@ export default async (req, context) => {
         // The widget watches for this marker and switches to its offline answers.
         controller.enqueue(encoder.encode('\u0000ERROR'));
       } finally {
+        clearInterval(keepAlive);
         controller.close();
       }
     },

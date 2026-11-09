@@ -7,13 +7,14 @@
 // chart specs the browser re-runs with the identical query engine to draw.
 import Anthropic from '@anthropic-ai/sdk';
 import { runQuery, AGGS, GRAINS, OPS } from '../lib/query.mjs';
-import { gate, json, MODEL } from '../lib/shared.mjs';
+import { gate, json, corsHeaders, MODEL } from '../lib/shared.mjs';
 
 const client = new Anthropic();
 
 const MAX_ROWS = 20000;
 const MAX_COLUMNS = 60;
 const MAX_TOOL_ROUNDS = 8;
+const TIME_BUDGET_MS = 38_000;
 
 const nullable = (schema) => ({ anyOf: [schema, { type: 'null' }] });
 
@@ -165,56 +166,86 @@ export default async (req, context) => {
     : 'Explore this dataset with run_query and build the most insightful executive dashboard you can, then call submit_dashboard.';
 
   const messages = [{ role: 'user', content: `${describeDataset(body.dataset)}\n\n${task}` }];
-  let queries = 0;
 
-  try {
-    for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-      const response = await client.beta.messages.create({
-        model: MODEL,
-        max_tokens: 16000,
-        betas: ['server-side-fallback-2026-07-01'],
-        fallbacks: 'default',
-        output_config: { effort: mode === 'ask' ? 'low' : 'medium' },
-        system: SYSTEM,
-        tools: [RUN_QUERY, submitTool],
-        messages,
-      });
+  // The reply is streamed as newline-delimited JSON: progress events while the
+  // agent works, then one "result" (or "error"). Streaming matters — Netlify's
+  // edge drops a request that sends nothing for ~30s, and a full analysis can
+  // take longer than that. It also lets the UI show real progress.
+  const started = Date.now();
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const send = (obj) => controller.enqueue(encoder.encode(JSON.stringify(obj) + '\n'));
+      const heartbeat = setInterval(() => send({ type: 'ping' }), 5000);
+      let queries = 0;
+      try {
+        for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
+          send({ type: 'progress', stage: round === 0 ? 'exploring' : 'analysing', round, queries });
+          const response = await client.beta.messages.create({
+            model: MODEL,
+            max_tokens: 16000,
+            betas: ['server-side-fallback-2026-07-01'],
+            fallbacks: 'default',
+            output_config: { effort: 'low' },
+            system: SYSTEM,
+            tools: [RUN_QUERY, submitTool],
+            messages,
+          });
 
-      if (response.stop_reason === 'refusal') return json(req, 422, { error: 'The AI declined to analyze this request.' });
-      if (response.stop_reason === 'max_tokens') return json(req, 502, { error: 'The analysis ran too long — try a smaller dataset or question.' });
+          if (response.stop_reason === 'refusal') return send({ type: 'error', error: 'The AI declined to analyze this request.' });
+          if (response.stop_reason === 'max_tokens') return send({ type: 'error', error: 'The analysis ran too long. Try a smaller dataset or question.' });
 
-      const toolUses = response.content.filter((b) => b.type === 'tool_use');
-      const submit = toolUses.find((b) => b.name === submitTool.name);
-      if (submit) return json(req, 200, { mode, result: submit.input, queries });
+          const toolUses = response.content.filter((b) => b.type === 'tool_use');
+          const submit = toolUses.find((b) => b.name === submitTool.name);
+          if (submit) return send({ type: 'result', mode, result: submit.input, queries, seconds: Math.round((Date.now() - started) / 1000) });
 
-      if (!toolUses.length) {
-        // Model answered in prose without the submit tool — nudge it once more.
-        messages.push({ role: 'assistant', content: response.content });
-        messages.push({ role: 'user', content: `Please deliver the result by calling ${submitTool.name}.` });
-        continue;
+          messages.push({ role: 'assistant', content: response.content });
+          if (!toolUses.length) {
+            // Model answered in prose without the submit tool — nudge it once more.
+            messages.push({ role: 'user', content: `Please deliver the result by calling ${submitTool.name}.` });
+            continue;
+          }
+
+          const results = toolUses.map((tu) => {
+            if (tu.name !== 'run_query') {
+              return { type: 'tool_result', tool_use_id: tu.id, is_error: true, content: `Call ${submitTool.name} only on its own, after your queries.` };
+            }
+            queries++;
+            try {
+              const r = runQuery(rows, columns, tu.input);
+              send({ type: 'query', queries, label: describeQuery(r.spec) });
+              return { type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify({ labels: r.labels, values: r.values, total: r.total, rowsMatched: r.rowsMatched }) };
+            } catch (e) {
+              return { type: 'tool_result', tool_use_id: tu.id, is_error: true, content: String(e.message || e) };
+            }
+          });
+          // Functions are cut off at 60s: past the time budget, ask for the result now.
+          const late = Date.now() - started > TIME_BUDGET_MS;
+          messages.push({ role: 'user', content: late
+            ? [...results, { type: 'text', text: `Time is nearly up. Call ${submitTool.name} now with what you have found.` }]
+            : results });
+        }
+        send({ type: 'error', error: 'The analysis took too many steps. Please try again.' });
+      } catch (err) {
+        console.error('analyze error', err?.status, err?.message);
+        send({ type: 'error', error: err?.status === 429 ? 'The AI is busy. Try again in a moment.' : 'The AI service is unavailable right now.' });
+      } finally {
+        clearInterval(heartbeat);
+        controller.close();
       }
+    },
+  });
 
-      messages.push({ role: 'assistant', content: response.content });
-      const results = toolUses.map((tu) => {
-        if (tu.name !== 'run_query') {
-          return { type: 'tool_result', tool_use_id: tu.id, is_error: true, content: 'Unknown tool' };
-        }
-        queries++;
-        try {
-          const r = runQuery(rows, columns, tu.input);
-          return { type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify({ labels: r.labels, values: r.values, total: r.total, rowsMatched: r.rowsMatched }) };
-        } catch (e) {
-          return { type: 'tool_result', tool_use_id: tu.id, is_error: true, content: String(e.message || e) };
-        }
-      });
-      messages.push({ role: 'user', content: results });
-    }
-    return json(req, 504, { error: 'The analysis took too many steps — please try again.' });
-  } catch (err) {
-    console.error('analyze error', err?.status, err?.message);
-    const status = err?.status === 429 ? 429 : 502;
-    return json(req, status, { error: status === 429 ? 'The AI is busy — try again in a moment.' : 'The AI service is unavailable right now.' });
-  }
+  return new Response(stream, {
+    headers: { ...corsHeaders(req), 'Content-Type': 'application/x-ndjson; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' },
+  });
 };
+
+function describeQuery(q) {
+  const what = q.measure ? `${q.agg} of ${q.measure}` : 'row count';
+  const by = q.groupBy ? ` by ${q.groupBy}${q.timeGrain && q.timeGrain !== 'none' ? ` (${q.timeGrain})` : ''}` : '';
+  const where = q.filters?.length ? ` where ${q.filters.map((f) => `${f.column} ${f.op} ${f.value}`).join(', ')}` : '';
+  return `${what}${by}${where}`.replace(/_/g, ' ');
+}
 
 export const config = { path: '/api/analyze' };
