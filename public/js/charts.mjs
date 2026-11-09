@@ -140,7 +140,8 @@ function countUp(el, target, fmt) {
   const start = performance.now();
   const dur = 1100;
   (function frame(now) {
-    const t = Math.min(1, (now - start) / dur);
+    // rAF timestamps can be slightly earlier than `start`; clamp so values never go negative.
+    const t = Math.min(1, Math.max(0, (now - start) / dur));
     const eased = 1 - Math.pow(1 - t, 3);
     el.textContent = fmt(target * eased);
     if (t < 1) requestAnimationFrame(frame); else el.textContent = fmt(target);
