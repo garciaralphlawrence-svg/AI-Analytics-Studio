@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Analytics Studio — Instant AI dashboards from any spreadsheet</title>
+  <meta name="description" content="Drop in any Excel or CSV file and AI Analytics Studio builds an interactive dashboard, writes insights, and answers questions about your data in plain English. Built by Ralph Garcia.">
+  <meta property="og:title" content="AI Analytics Studio">
+  <meta property="og:description" content="Drop a spreadsheet. Get an AI-built dashboard in seconds.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%236d5dfc'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Cpath d='M8 22V14M14 22V9M20 22v-6M26 22V12' stroke='white' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/studio.css">
+  <script>try{var t=localStorage.getItem('studio-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js" defer></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" defer></script>
+  <script type="module" src="js/app.mjs"></script>
+</head>
+<body>
+  <div class="bg-aurora" aria-hidden="true"><span></span><span></span><span></span></div>
+
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="AI Analytics Studio home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span>AI Analytics <b>Studio</b></span>
+    </a>
+    <div class="dataset-pill" id="datasetPill" hidden>
+      <span class="dot"></span><span id="datasetName">—</span><span class="muted" id="datasetMeta"></span>
+    </div>
+    <nav class="top-actions">
+      <button class="btn ghost" id="btnNew" hidden title="Load another dataset">＋ New data</button>
+      <button class="btn ghost" id="btnPresent" hidden title="Presentation mode (P)">▶ Present</button>
+      <button class="btn ghost" id="btnExport" hidden title="Save as PDF / print">⤓ Export</button>
+      <button class="icon-btn" id="btnTheme" aria-label="Toggle light/dark theme" title="Toggle theme">◐</button>
+    </nav>
+  </header>
+
+  <!-- ============ LANDING ============ -->
+  <main id="landing" class="landing">
+    <section class="hero">
+      <p class="eyebrow"><span class="spark">✦</span> AI-powered analytics · built by Ralph Garcia</p>
+      <h1>Drop a spreadsheet.<br><span class="grad">Get a dashboard in seconds.</span></h1>
+      <p class="lead">AI Analytics Studio reads any Excel or CSV file, builds an interactive dashboard automatically,
+        writes the insights a manager would want, and answers your questions in plain English, with exact numbers.</p>
+
+      <label class="dropzone" id="dropzone" tabindex="0">
+        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.tsv,.ods" hidden>
+        <span class="dz-icon" aria-hidden="true">⇪</span>
+        <span class="dz-title">Drop your Excel or CSV file here</span>
+        <span class="dz-sub">or <u>browse your computer</u> · up to 20,000 rows · stays private</span>
+      </label>
+
+      <p class="or">…or try a live sample</p>
+      <div class="samples" id="samples"></div>
+    </section>
+
+    <section class="how">
+      <div class="step"><span>1</span><h3>Upload</h3><p>Excel, CSV or ODS. Columns are typed automatically: numbers, dates, categories.</p></div>
+      <div class="step"><span>2</span><h3>Auto-dashboard</h3><p>KPIs, trends and breakdowns appear instantly, then the AI analyst curates the story.</p></div>
+      <div class="step"><span>3</span><h3>Ask anything</h3><p>“Which branch grew fastest?” The AI queries every row and answers with a chart.</p></div>
+    </section>
+  </main>
+
+  <!-- ============ LOADING ============ -->
+  <div class="loading" id="loading" hidden>
+    <div class="loader-orb"></div>
+    <p id="loadingText">Reading your file…</p>
+  </div>
+
+  <!-- ============ DASHBOARD ============ -->
+  <main id="dashboard" class="dashboard" hidden>
+    <section class="board">
+      <div class="board-head">
+        <div>
+          <span class="badge" id="boardBadge">⚡ Auto-dashboard</span>
+          <h2 id="boardTitle">Dashboard</h2>
+          <p id="boardSummary" class="summary"></p>
+        </div>
+        <div class="view-toggle" id="viewToggle" hidden>
+          <button data-view="ai" class="on">✨ AI view</button><button data-view="auto">⚡ Auto view</button>
+        </div>
+      </div>
+      <div class="kpis" id="kpis"></div>
+      <div class="grid" id="grid"></div>
+
+      <details class="data-preview" id="dataPreview">
+        <summary>Data preview &amp; column profile</summary>
+        <div class="col-chips" id="colChips"></div>
+        <div class="table-wrap"><table id="previewTable"></table></div>
+      </details>
+    </section>
+
+    <aside class="analyst" id="analyst" aria-label="AI analyst">
+      <div class="analyst-head">
+        <span class="mini-orb" aria-hidden="true"></span>
+        <div><strong>AI Analyst</strong><span class="muted" id="analystStatus">Ready</span></div>
+      </div>
+
+      <div class="analyst-body" id="analystBody">
+        <div class="insights" id="insights"></div>
+        <div class="thread" id="thread"></div>
+      </div>
+
+      <div class="suggest" id="suggest"></div>
+      <form class="ask" id="askForm" autocomplete="off">
+        <input id="askInput" maxlength="500" placeholder="Ask your data a question…" aria-label="Ask your data a question">
+        <button type="submit" aria-label="Ask">➤</button>
+      </form>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="widget/ralph-ai.js" data-site="studio" data-position="left" defer></script>
+</body>
+</html>
