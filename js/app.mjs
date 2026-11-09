@@ -4,7 +4,10 @@ import { autoDashboard, starterQuestions } from './autodash.mjs';
 import { renderChart, disposeCharts, formatValue, prettyLabel } from './charts.mjs';
 
 const $ = (id) => document.getElementById(id);
-const API = '/api/analyze';
+// On GitHub Pages there are no functions, so call the Netlify backend directly.
+const API = location.hostname.endsWith('github.io')
+  ? 'https://ralph-ai-analytics-studio.netlify.app/api/analyze'
+  : '/api/analyze';
 const MAX_ROWS = 20000;
 
 const state = {

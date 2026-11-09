@@ -2,6 +2,7 @@
  * Ralph AI — chat widget shared by all of Ralph Garcia's sites.
  * Usage: <script src="https://ralph-ai-analytics-studio.netlify.app/widget/ralph-ai.js" data-site="kmm" defer></script>
  * data-site: portfolio | studio | kmm | islakeys | bizbuddy
+ * data-api: origin of the AI backend (default: the script's own origin)
  * data-position: right (default) | left — use left when the page already has UI in the bottom-right corner.
  * Everything renders inside a shadow root, so host-page CSS can't leak in or out.
  */
@@ -11,7 +12,10 @@
   window.__ralphAI = true;
 
   var script = document.currentScript || document.querySelector('script[src*="ralph-ai.js"]');
-  var BASE = new URL(script.src, location.href).origin;
+  // Widget files (kb.json) live next to this script; the AI backend can live elsewhere
+  // (data-api), so the widget can be served from GitHub Pages while the AI runs on Netlify.
+  var ASSETS = new URL(script.src, location.href).href.replace(/\/[^\/]*$/, '');
+  var API = (script.getAttribute('data-api') || new URL(script.src, location.href).origin).replace(/\/$/, '');
   var SITE = (script.getAttribute('data-site') || 'portfolio').toLowerCase();
   var STORE_KEY = 'ralph-ai-chat:' + SITE;
   var MAX_HISTORY = 12;
@@ -81,7 +85,7 @@
   // chatting — that would wipe an answer that is still streaming in.
   if (history.length) renderHistory();
   var greetIfIdle = function () { if (!history.length && !body.children.length) greet(); };
-  fetch(BASE + '/widget/kb.json').then(function (r) { return r.json(); }).then(function (kb) {
+  fetch(ASSETS + '/kb.json').then(function (r) { return r.json(); }).then(function (kb) {
     KB = kb;
     greetIfIdle();
   }).catch(greetIfIdle);
@@ -208,7 +212,7 @@
   function streamChat(bubble) {
     var ctrl = new AbortController();
     var timer = setTimeout(function () { ctrl.abort(); }, 45000);
-    return fetch(BASE + '/api/chat', {
+    return fetch(API + '/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ site: SITE, page: location.pathname + location.hash, messages: history.slice(-MAX_HISTORY) }),
