@@ -76,10 +76,15 @@
   (document.body ? Promise.resolve() : new Promise(function (r) { document.addEventListener('DOMContentLoaded', r); }))
     .then(function () { document.body.appendChild(host); });
 
+  // Restore an earlier conversation right away; greet new visitors once the
+  // knowledge file arrives. Never redraw if the visitor has already started
+  // chatting — that would wipe an answer that is still streaming in.
+  if (history.length) renderHistory();
+  var greetIfIdle = function () { if (!history.length && !body.children.length) greet(); };
   fetch(BASE + '/widget/kb.json').then(function (r) { return r.json(); }).then(function (kb) {
     KB = kb;
-    if (!history.length) greet(); else renderHistory();
-  }).catch(function () { if (!history.length) greet(); else renderHistory(); });
+    greetIfIdle();
+  }).catch(greetIfIdle);
 
   // ---------- open / close ----------
   function open() {
