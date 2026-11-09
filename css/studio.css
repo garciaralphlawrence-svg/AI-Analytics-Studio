@@ -83,6 +83,16 @@ button { font: inherit; color: inherit; }
 .dataset-pill { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 14px; border-radius: 999px; background: var(--card); border: 1px solid var(--border); font-size: 13px; }
 .dataset-pill #datasetName { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
 .dataset-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); box-shadow: 0 0 10px var(--good); flex: none; }
+/* App switcher shared by Studio, Resibo Maker and AI Chat */
+.suite-nav { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); }
+.suite-nav a { padding: 6px 12px; border-radius: 9px; color: var(--text-2); text-decoration: none; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.suite-nav a:hover { color: var(--text-1); background: rgba(109, 93, 252, .12); }
+.suite-nav a[aria-current="page"] { color: #fff; background: linear-gradient(135deg, var(--accent), #8b5cf6); }
+@media (max-width: 700px) {
+  .topbar { flex-wrap: wrap; }
+  .suite-nav { order: 10; width: 100%; justify-content: space-between; }
+  .suite-nav a { flex: 1; text-align: center; padding: 7px 4px; font-size: 12px; }
+}
 .top-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
 .btn { padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border-2); background: var(--card); cursor: pointer; font-size: 13px; font-weight: 600; transition: transform .15s, background .15s, border-color .15s; white-space: nowrap; }
 .btn:hover { transform: translateY(-1px); border-color: var(--accent); }

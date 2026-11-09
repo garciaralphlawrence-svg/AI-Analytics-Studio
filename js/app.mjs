@@ -24,8 +24,9 @@ waitForLibs().then(() => {
   renderSamples();
   bindLanding();
   bindDashboard();
-  const sample = new URLSearchParams(location.search).get('sample');
-  if (sample) loadSample(sample);
+  const params = new URLSearchParams(location.search);
+  if (params.get('import') === 'suite') loadSuiteImport();
+  else if (params.get('sample')) loadSample(params.get('sample'));
 });
 
 function waitForLibs() {
@@ -111,6 +112,16 @@ async function loadSample(id) {
   await tick();
   const { name, rows } = s.make();
   start(name, rows);
+}
+
+// Data handed over by another app in the suite (e.g. Resibo Maker's "Analyze my sales").
+function loadSuiteImport() {
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem('ralph-suite-import')); } catch (e) { /* blocked or corrupt */ }
+  if (!data || !Array.isArray(data.rows) || !data.rows.length) { toast('Nothing to import — open this from the Resibo Maker.'); return; }
+  show('loading');
+  $('loadingText').textContent = `Loading ${data.name}…`;
+  tick().then(() => start(String(data.name || 'Imported data'), data.rows.slice(0, MAX_ROWS)));
 }
 
 async function loadFile(file) {
