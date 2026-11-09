@@ -412,9 +412,17 @@ function enhance(root, streaming) {
 }
 
 const cursorEl = () => { const s = document.createElement('span'); s.className = 'cursor'; s.setAttribute('aria-hidden', 'true'); return s; };
+// The last node that actually holds content (skips trailing whitespace-only text).
+const lastContentNode = (el) => {
+  let n = el.lastChild;
+  while (n && n.nodeType === Node.TEXT_NODE && !n.textContent.trim()) n = n.previousSibling;
+  return n;
+};
 function appendCursor(root) {
   let node = root;
-  while (node.lastElementChild && !['BR', 'HR', 'IMG'].includes(node.lastElementChild.tagName)) {
+  // Only descend into the last element if nothing comes after it — otherwise
+  // "a **longer** answer" would put the cursor after "longer", mid-sentence.
+  while (node.lastElementChild && lastContentNode(node) === node.lastElementChild && !['BR', 'HR', 'IMG'].includes(node.lastElementChild.tagName)) {
     const last = node.lastElementChild;
     if (last.classList.contains('code-head')) break;
     node = last.classList.contains('code-block') ? last.querySelector('code') : last;
