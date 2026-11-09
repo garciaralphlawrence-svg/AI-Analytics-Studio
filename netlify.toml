@@ -1,5 +1,6 @@
 # Static site lives in public/; the shared Ralph AI backend lives in netlify/functions.
 [build]
+  command = "npm run build"
   publish = "public"
   functions = "netlify/functions"
 
