@@ -4,7 +4,7 @@
 const $ = (id) => document.getElementById(id);
 // On GitHub Pages there are no functions, so call the Netlify backend directly.
 const API = location.hostname.endsWith('github.io')
-  ? 'https://ralph-ai-analytics-studio.netlify.app/api/assistant'
+  ? 'https://ralph-ai-suite.vercel.app/api/assistant'
   : '/api/assistant';
 
 const KEYS = { convos: 'ralph-chat-convos-v1', code: 'ralph-chat-code', side: 'ralph-chat-sidebar', theme: 'studio-theme' };

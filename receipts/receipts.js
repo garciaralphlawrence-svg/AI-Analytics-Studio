@@ -1,9 +1,9 @@
 import { computeTotals, peso, nextReceiptNumber, quickParse, sampleReceipts, PAYMENT_METHODS } from './receipt-core.mjs';
 
 const $ = (id) => document.getElementById(id);
-// On GitHub Pages there are no functions, so call the Netlify backend directly.
+// On GitHub Pages there are no functions, so call the AI backend (Vercel) directly.
 const API = location.hostname.endsWith('github.io')
-  ? 'https://ralph-ai-analytics-studio.netlify.app/api/receipt'
+  ? 'https://ralph-ai-suite.vercel.app/api/receipt'
   : '/api/receipt';
 const CATEGORIES = ['Food & Drinks', 'Groceries', 'Transport', 'Supplies', 'Utilities', 'Services', 'Other'];
 const EXAMPLES = [
