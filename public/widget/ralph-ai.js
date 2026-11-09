@@ -1,6 +1,6 @@
 /*!
  * Ralph AI — chat widget shared by all of Ralph Garcia's sites.
- * Usage: <script src="https://ralph-ai-analytics-studio.netlify.app/widget/ralph-ai.js" data-site="kmm" defer></script>
+ * Usage: <script src="https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/widget/ralph-ai.js" data-site="kmm" data-api="https://ralph-ai-suite.vercel.app" defer></script>
  * data-site: portfolio | studio | kmm | islakeys | bizbuddy
  * data-api: origin of the AI backend (default: the script's own origin)
  * data-position: right (default) | left — use left when the page already has UI in the bottom-right corner.

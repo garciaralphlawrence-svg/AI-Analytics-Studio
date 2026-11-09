@@ -10,6 +10,7 @@ export const ALLOWED_ORIGINS = new Set([
   'https://islakeys-ph.netlify.app',
   'https://bizbuddy-va.netlify.app',
   'https://ralph-ai-analytics-studio.netlify.app',
+  'https://ralph-ai-suite.vercel.app',
   'https://garciaralphlawrence-svg.github.io',
   ...(process.env.EXTRA_ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean),
 ]);
