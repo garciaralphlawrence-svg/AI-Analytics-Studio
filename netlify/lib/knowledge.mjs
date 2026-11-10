@@ -7,18 +7,10 @@ export const SITES = {
   portfolio: {
     name: "Ralph Garcia — Portfolio",
     url: "https://garciaralphlawrence-svg.github.io/Ralph-Portfolio/",
-    greeting: "Hi! I'm Kapitan 👋 Ask me about Ralph's experience, projects, or any of his websites.",
-    suggestions: ["What does Ralph do?", "Show me his best projects", "Is Ralph open to work?", "What is AI Analytics Studio?"],
+    greeting: "Hi! I'm Kapitan 👋 Ask me about any of these websites.",
+    suggestions: ["What is AI Analytics Studio?", "What is KMM Travel?", "What is IslaKeys?", "What is BizBuddy?"],
     facts: `
-Ralph Lawrence F. Garcia — Data Science graduate (BS Data Science, Cum Laude, University of the East, 2022–2026; College Scholar; Finance Executive of the UE Data Science Society). Based in Quezon City, Philippines. Open to roles in data science, analytics and systems development, and to research or internal-tools collaborations.
-Contact: rlawrencegarcia03@gmail.com · LinkedIn: https://www.linkedin.com/in/ralph-garcia-b57814401 · GitHub: https://github.com/garciaralphlawrence-svg · CV download and contact form on the portfolio: [Contact Ralph](https://garciaralphlawrence-svg.github.io/Ralph-Portfolio/#contact)
-Experience:
-- Data Quality Assurance Analyst, UERM Medical Center (2026): designed and built the UERM Quality Management System (QMS) portal for ISO 9001 (hospital) and ISO 21001 (academe) — Knowledge Hub (document control, search, access control, AWS S3), KPI Generator (automatic Achieved/Not Achieved status, heatmaps, approvals), Risk Register, Privacy Impact Assessment, ISO 9001 and ISO 21001 Internal Audit, Patient Safety, Clinical Pathway, RADAR records management, Quality Improvement, Customer Experience (complaints, NPS, text mining) and Huddle 360. SQL Server database design, analytics dashboards, workflow automation, testing and support. The QMS is an internal system, so it is shown only as screenshots on the portfolio.
-- Intern, Leasing & Data Department, Ayala Corporation (2026): Python automation of repetitive reporting tasks, data processing for business reports.
-- Barista, Starbucks (2022–2023): customer service, teamwork under pressure.
-Skills: Python, R, SQL, Java; data analysis, statistics, data visualization, machine learning, NLP, predictive modelling; Next.js, React, TypeScript, Tailwind, PostgreSQL, Prisma, JWT auth & role-based access; AWS S3, Git, Vercel, Netlify; Claude AI integration.
-Research: PredScan — detecting predatory open-access journals with ML (ACM 2024 publication + 2025 study); Factors in negative online-learning academic self-concept (ICCE 2024); Leadership in Context — sentiment analysis of Philippine presidential speeches (SAS Curiosity Cup 2025 Top 5 Finalist); Philippine rice prices Jan 2024–May 2025 (time series); Grade 5 math CSCL in-game behaviours; text mining of Philippine news coverage of Japan.
-Honors: Cum Laude (UE, June 2026); SAS Curiosity Cup international Top 5 finalist (Mar 2025); Google Workspace Certification & AI training (AI Singapore, Apr 2025); ASEAN Data Science Explorers 2025.
+Portfolio website by Ralph Garcia. Contact form on the portfolio: [Contact](https://garciaralphlawrence-svg.github.io/Ralph-Portfolio/#contact)
 Projects list: UERM QMS; Future Minds Academy website + school management system; AI Analytics Studio; KMM Travel & Tours; IslaKeys; Biz Buddy; PredScan; EASTELLA (agentic information software documentation); Algebot (algebra chatbot documentation).`,
   },
 
