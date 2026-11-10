@@ -130,7 +130,7 @@ table.list tr.empty td { color: var(--text-3); white-space: normal; padding: 18p
 
 /* ---------- print: only the receipt ---------- */
 @media print {
-  body > *:not(main), .rc-hero, .rc-panel, .tabs-card, .legal, #ralph-ai-root { display: none !important; }
+  body > *:not(main), .rc-hero, .rc-panel, .tabs-card, .legal, #kapitan-root { display: none !important; }
   .rc-wrap, .rc-grid { display: block; padding: 0; margin: 0; }
   .paper { box-shadow: none; margin: 0 auto; animation: none; }
   .paper::before, .paper::after, .draft-stamp { display: none; }
