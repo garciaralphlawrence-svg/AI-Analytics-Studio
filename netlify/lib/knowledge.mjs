@@ -1,4 +1,4 @@
-// What Ralph AI knows. One source of truth for:
+// What Kapitan knows. One source of truth for:
 //   - the Claude system prompt (KNOWLEDGE, built from SITES below)
 //   - the widget's offline answers (scripts/build-kb.mjs writes public/widget/kb.json)
 // Keep facts here in sync with the real sites. URLs are the live Netlify addresses.
@@ -7,7 +7,7 @@ export const SITES = {
   portfolio: {
     name: "Ralph Garcia — Portfolio",
     url: "https://garciaralphlawrence-svg.github.io/Ralph-Portfolio/",
-    greeting: "Hi! I'm Ralph AI 👋 Ask me about Ralph's experience, projects, or any of his websites.",
+    greeting: "Hi! I'm Kapitan 👋 Ask me about Ralph's experience, projects, or any of his websites.",
     suggestions: ["What does Ralph do?", "Show me his best projects", "Is Ralph open to work?", "What is AI Analytics Studio?"],
     facts: `
 Ralph Lawrence F. Garcia — Data Science graduate (BS Data Science, Cum Laude, University of the East, 2022–2026; College Scholar; Finance Executive of the UE Data Science Society). Based in Quezon City, Philippines. Open to roles in data science, analytics and systems development, and to research or internal-tools collaborations.
@@ -25,7 +25,7 @@ Projects list: UERM QMS; Future Minds Academy website + school management system
   studio: {
     name: "AI Analytics Studio",
     url: "https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/",
-    greeting: "Hi! I'm Ralph AI 👋 Drop in a spreadsheet and I'll build the dashboard — or ask me how it works.",
+    greeting: "Hi! I'm Kapitan 👋 Drop in a spreadsheet and I'll build the dashboard — or ask me how it works.",
     suggestions: ["How does this work?", "Is my data safe?", "What files can I upload?", "Try a sample dataset"],
     facts: `
 AI Analytics Studio — built by Ralph Garcia. Upload any Excel (.xlsx/.xls) or CSV file, or pick a sample dataset, and it instantly builds an interactive dashboard: KPI cards, trend lines, category breakdowns and a data table, all generated automatically from the column types it detects (numbers, dates, categories, text).
@@ -35,17 +35,17 @@ Privacy & data safety (is my data safe or secure?): files are parsed in the brow
 Sample datasets: Coffee shop sales, Philippine real-estate listings, Travel bookings, School enrollment.
 Extras: dark/light theme, presentation mode, export the dashboard to PDF/print, CSV download of any chart's data.
 Tech: vanilla JavaScript, Apache ECharts, SheetJS, Netlify Functions, Claude (Anthropic) with tool use.
-It is the hub of Ralph AI Suite, together with the AI Resibo Maker (receipts) and Ralph AI Chat (ChatGPT-style assistant). Sales from the Resibo Maker open here as a dashboard with one click.
+It is the hub of Kapitan AI Suite, together with the AI Resibo Maker (receipts) and Kapitan Chat (ChatGPT-style assistant). Sales from the Resibo Maker open here as a dashboard with one click.
 Open it: [AI Analytics Studio](https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/)`,
   },
 
   resibo: {
     name: "AI Resibo Maker",
     url: "https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/receipts/",
-    greeting: "Hi! I'm Ralph AI 🧾 Describe a sale and I'll help you make the resibo — or ask how it works.",
+    greeting: "Hi! I'm Kapitan 🧾 Describe a sale and I'll help you make the resibo — or ask how it works.",
     suggestions: ["How do I make a receipt?", "Does it compute senior discount?", "Can it scan a paper receipt?", "Is this a BIR official receipt?"],
     facts: `
-AI Resibo Maker (part of Ralph AI Suite, built by Ralph Garcia). Describe a sale the way you'd tell a cashier — typed or spoken, in English, Filipino or Taglish (e.g. "2 spanish latte tig-165, 1 ensaymada 85, gcash, si Juan") — and the AI fills in the receipt: customer, items, quantities, prices, payment method (Cash, GCash, Maya, Card, Bank Transfer), cash received and discounts. Everything stays editable before issuing.
+AI Resibo Maker (part of Kapitan AI Suite, built by Ralph Garcia). Describe a sale the way you'd tell a cashier — typed or spoken, in English, Filipino or Taglish (e.g. "2 spanish latte tig-165, 1 ensaymada 85, gcash, si Juan") — and the AI fills in the receipt: customer, items, quantities, prices, payment method (Cash, GCash, Maya, Card, Bank Transfer), cash received and discounts. Everything stays editable before issuing.
 Money is computed exactly by the app, not the AI: prices are VAT-inclusive; the receipt shows VATable sales and 12% VAT. Senior Citizen and PWD discounts follow the law: VAT is removed first, then 20% off (e.g. ₱750 of items → ₱535.71 due), and the receipt has a line for the OSCA/PWD ID and signature. Promo % discounts and change for cash payments are supported.
 Issue the receipt to give it a number (e.g. KC-000001), then print it or save as PDF (80mm receipt layout), download it as an image, or share it from a phone. Business name, address, TIN, prefix and footer are set in Business settings.
 Receipt scanner: take a photo of any paper receipt and the AI reads the merchant, date, items, VAT and total into an expense record for review.
@@ -55,19 +55,19 @@ Open it: [AI Resibo Maker](https://garciaralphlawrence-svg.github.io/AI-Analytic
   },
 
   aichat: {
-    name: "Ralph AI Chat",
+    name: "Kapitan Chat",
     url: "https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/chat/",
     greeting: null,
     suggestions: [],
     facts: `
-Ralph AI Chat (part of Ralph AI Suite) is a ChatGPT-style assistant built by Ralph Garcia on Claude: conversations saved in a sidebar, answers that stream in live with formatted text and code, stop and regenerate, voice input, and image upload so it can describe photos or read documents. It needs a demo access code from Ralph so his AI credits can't be misused by strangers.
-Open it: [Ralph AI Chat](https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/chat/)`,
+Kapitan Chat (part of Kapitan AI Suite) is a ChatGPT-style assistant built by Ralph Garcia on Claude: conversations saved in a sidebar, answers that stream in live with formatted text and code, stop and regenerate, voice input, and image upload so it can describe photos or read documents. It needs a demo access code from Ralph so his AI credits can't be misused by strangers.
+Open it: [Kapitan Chat](https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/chat/)`,
   },
 
   kmm: {
     name: "KMM Travel Co.",
     url: "https://garciaralphlawrence-svg.github.io/KMM/",
-    greeting: "Mabuhay! I'm Ralph AI 🌴 Ask me about KMM's Philippine tour packages, prices, or booking.",
+    greeting: "Mabuhay! I'm Kapitan 🌴 Ask me about KMM's Philippine tour packages, prices, or booking.",
     suggestions: ["What packages do you offer?", "How much is Boracay?", "How do discounts work?", "How do I book?"],
     facts: `
 KMM Travel Co. ("Know Me More") — premium, personalised Philippines-only travel, founded by KM Reyes (founder & CEO). DOT accredited, eco-friendly practices, partners with local guides. Also customises international tours (Asia, Europe, Oceania) on request.
@@ -88,7 +88,7 @@ Pages: [Tour packages](https://garciaralphlawrence-svg.github.io/KMM/#packages) 
   islakeys: {
     name: "IslaKeys",
     url: "https://garciaralphlawrence-svg.github.io/IslaKeys/",
-    greeting: "Hi! I'm Ralph AI 🔑 Ask me about IslaKeys properties, the client and broker portals, or how buying works.",
+    greeting: "Hi! I'm Kapitan 🔑 Ask me about IslaKeys properties, the client and broker portals, or how buying works.",
     suggestions: ["What properties are featured?", "How do I log in as a demo user?", "What can brokers do?", "Can foreigners buy property?"],
     facts: `
 IslaKeys — "Unlock Property in the Philippines". Philippine luxury property advisory that matches buyers (including foreign buyers) with verified, PRC-licensed brokers. Trusted guidance since 2024; 4.9/5 service rating; coverage in Makati, BGC, Cebu, Tagaytay and coastal investment areas.
@@ -106,7 +106,7 @@ Pages: [Home](https://garciaralphlawrence-svg.github.io/IslaKeys/) · [Login / S
   bizbuddy: {
     name: "Biz Buddy",
     url: "https://garciaralphlawrence-svg.github.io/BizBuddy/",
-    greeting: "Hi! I'm Ralph AI 💼 Ask me about hiring an executive VA, becoming a VA partner, or the demo dashboards.",
+    greeting: "Hi! I'm Kapitan 💼 Ask me about hiring an executive VA, becoming a VA partner, or the demo dashboards.",
     suggestions: ["What can a VA do for me?", "How do I become a VA?", "How do I try the demo?", "What are the VA requirements?"],
     facts: `
 Biz Buddy — executive-grade virtual assistant (VA) partnerships. Places top 1% vetted virtual talent with executive leaders; trusted by scale-ups, partners and private-equity offices. 520+ vetted VAs, 1.2k clients, 98% retention. Offices: New York / London / remote. Contact: hello@bizbuddy.com · +1 (212) 555 9800.

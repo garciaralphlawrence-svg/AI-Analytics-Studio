@@ -1,6 +1,6 @@
 /*!
- * Ralph AI — chat widget shared by all of Ralph Garcia's sites.
- * Usage: <script src="https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/widget/ralph-ai.js" data-site="kmm" data-api="https://ralph-ai-suite.vercel.app" defer></script>
+ * Kapitan — chat widget shared by all of Ralph Garcia's sites.
+ * Usage: <script src="https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/widget/kapitan.js" data-site="kmm" data-api="https://ralph-ai-suite.vercel.app" defer></script>
  * data-site: portfolio | studio | kmm | islakeys | bizbuddy
  * data-api: origin of the AI backend (default: the script's own origin)
  * data-position: right (default) | left — use left when the page already has UI in the bottom-right corner.
@@ -8,16 +8,16 @@
  */
 (function () {
   'use strict';
-  if (window.__ralphAI) return;
-  window.__ralphAI = true;
+  if (window.__kapitan) return;
+  window.__kapitan = true;
 
-  var script = document.currentScript || document.querySelector('script[src*="ralph-ai.js"]');
+  var script = document.currentScript || document.querySelector('script[src*="kapitan.js"], script[src*="ralph-ai.js"]');
   // Widget files (kb.json) live next to this script; the AI backend can live elsewhere
   // (data-api), so the widget can be served from GitHub Pages while the AI runs on Netlify.
   var ASSETS = new URL(script.src, location.href).href.replace(/\/[^\/]*$/, '');
   var API = (script.getAttribute('data-api') || new URL(script.src, location.href).origin).replace(/\/$/, '');
   var SITE = (script.getAttribute('data-site') || 'portfolio').toLowerCase();
-  var STORE_KEY = 'ralph-ai-chat:' + SITE;
+  var STORE_KEY = 'kapitan-chat:' + SITE;
   var MAX_HISTORY = 12;
   var reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -45,20 +45,20 @@
 
   // ---------- markup ----------
   var host = document.createElement('div');
-  host.id = 'ralph-ai-root';
+  host.id = 'kapitan-root';
   host.style.cssText = 'position:fixed;z-index:2147483000;inset:auto 0 0 auto;';
   if (script.getAttribute('data-position') === 'left') host.className = 'left';
   var root = host.attachShadow({ mode: 'open' });
 
   root.innerHTML = '<style>' + CSS() + '</style>' +
-    '<button class="launcher" part="launcher" aria-label="Open Ralph AI chat" aria-expanded="false">' +
+    '<button class="launcher" part="launcher" aria-label="Open Kapitan chat" aria-expanded="false">' +
       '<span class="orb"><span class="orb-core"></span></span>' +
-      '<span class="launch-label">Ask Ralph AI</span>' +
+      '<span class="launch-label">Ask Kapitan</span>' +
     '</button>' +
-    '<section class="panel" role="dialog" aria-label="Ralph AI chat" aria-hidden="true">' +
+    '<section class="panel" role="dialog" aria-label="Kapitan chat" aria-hidden="true">' +
       '<header>' +
         '<span class="orb sm"><span class="orb-core"></span></span>' +
-        '<div class="title"><strong>Ralph AI</strong><span class="status"><i></i><em>Online · knows all of Ralph\'s sites</em></span></div>' +
+        '<div class="title"><strong>Kapitan</strong><span class="status"><i></i><em>Online · knows all of Ralph\'s sites</em></span></div>' +
         '<button class="icon expand" title="Expand" aria-label="Expand chat">' + ICON.expand + '</button>' +
         '<button class="icon reset" title="New chat" aria-label="Start a new chat">' + ICON.refresh + '</button>' +
         '<button class="icon close" title="Close" aria-label="Close chat">' + ICON.close + '</button>' +
@@ -113,10 +113,10 @@
   });
   root.addEventListener('keydown', function (e) { if (e.key === 'Escape' && panel.classList.contains('open')) close(); });
   // Small "hello" nudge a few seconds after first load in this tab.
-  if (!sessionStorage.getItem('ralph-ai-nudged')) {
+  if (!sessionStorage.getItem('kapitan-nudged')) {
     setTimeout(function () {
       if (!panel.classList.contains('open')) launcher.classList.add('nudge');
-      try { sessionStorage.setItem('ralph-ai-nudged', '1'); } catch (e) {}
+      try { sessionStorage.setItem('kapitan-nudged', '1'); } catch (e) {}
     }, 4000);
   }
 
@@ -125,7 +125,7 @@
 
   function greet() {
     var s = siteInfo();
-    addBubble('assistant', s && s.greeting ? s.greeting : "Hi! I'm Ralph AI 👋 Ask me anything about Ralph's websites.", false);
+    addBubble('assistant', s && s.greeting ? s.greeting : "Hi! I'm Kapitan 👋 Ask me anything about Ralph's websites.", false);
     showChips(s ? s.suggestions : []);
   }
 

@@ -1,4 +1,4 @@
-// POST /api/chat — "Ralph AI", the assistant embedded on every project site.
+// POST /api/chat — "Kapitan", the assistant embedded on every project site.
 // Streams the reply back as plain text so the widget can render it live.
 import Anthropic from '@anthropic-ai/sdk';
 import { KNOWLEDGE, SITES } from '../lib/knowledge.mjs';
@@ -9,8 +9,9 @@ const client = new Anthropic();
 const MAX_TURNS = 12;
 const MAX_CHARS = 2000;
 
-const SYSTEM = `You are **Ralph AI**, the friendly assistant built into Ralph Lawrence F. Garcia's websites.
+const SYSTEM = `You are **Kapitan**, the friendly assistant built into Ralph Lawrence F. Garcia's websites.
 You help visitors with every site in Ralph's portfolio, not just the one they are on.
+Your name is Kapitan (never call yourself "Ralph AI"); Ralph Garcia is the person who built you.
 
 How to answer:
 - Be warm, confident and concise: 1–4 short paragraphs or a tight bullet list. Use **bold** for key facts.

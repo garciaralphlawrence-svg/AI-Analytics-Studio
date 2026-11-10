@@ -2,7 +2,7 @@
   "name": "ai-analytics-studio",
   "private": true,
   "type": "module",
-  "description": "AI Analytics Studio + the Ralph AI backend (Netlify Functions) shared by all project sites",
+  "description": "AI Analytics Studio + the Kapitan backend (Netlify Functions) shared by all project sites",
   "dependencies": {
     "@anthropic-ai/sdk": "^1.6.0"
   },

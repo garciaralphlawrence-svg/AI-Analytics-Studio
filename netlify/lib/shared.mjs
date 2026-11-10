@@ -1,4 +1,4 @@
-// Shared helpers for the Ralph AI functions (chat + analytics).
+// Shared helpers for the Kapitan functions (chat + analytics).
 // The Anthropic key lives only in the Netlify env var ANTHROPIC_API_KEY —
 // it never reaches the browser.
 

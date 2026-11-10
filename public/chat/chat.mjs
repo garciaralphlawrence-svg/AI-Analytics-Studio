@@ -1,4 +1,4 @@
-// Ralph AI Chat — a ChatGPT-style client for /api/assistant.
+// Kapitan Chat — a ChatGPT-style client for /api/assistant.
 // Conversations live in this browser's localStorage only.
 
 const $ = (id) => document.getElementById(id);
@@ -271,7 +271,7 @@ function renderMessage(m, conv) {
     wrap.append(acts);
     el.append(wrap);
   } else {
-    el.setAttribute('aria-label', 'Ralph AI said');
+    el.setAttribute('aria-label', 'Kapitan said');
     const av = document.createElement('div');
     av.className = 'avatar';
     av.setAttribute('aria-hidden', 'true');
@@ -306,14 +306,14 @@ function paintAssistant(m, conv = activeConv()) {
   const md = body.querySelector('.md');
   const streaming = !!(busy && busy.msg === m);
   if (!m.text && streaming) {
-    md.innerHTML = '<span class="thinking" role="img" aria-label="Ralph AI is thinking"><i></i><i></i><i></i></span>';
+    md.innerHTML = '<span class="thinking" role="img" aria-label="Kapitan is thinking"><i></i><i></i><i></i></span>';
   } else {
     renderMarkdown(md, m.text, streaming);
   }
   body.querySelectorAll('.alert, .note, .actions').forEach((n) => n.remove());
   if (streaming) return;
 
-  if (m.stopped) body.append(note(m.text ? 'Stopped' : 'Stopped before Ralph AI replied.'));
+  if (m.stopped) body.append(note(m.text ? 'Stopped' : 'Stopped before Kapitan replied.'));
   if (m.refused) body.append(alertBox('That’s one I can’t help with.', 'Try rephrasing, or ask something else.', m, 'info'));
   if (m.error) body.append(alertBox(m.error.title, m.error.detail, m, m.error.tone));
 
@@ -705,7 +705,7 @@ function startReply(conv) {
     conv.updated = Date.now();
     saveConvos();
     if (activeId === conv.id) { paintAssistant(msg, conv); scrollToBottom(); }
-    announce(msg.error ? msg.error.title : msg.refused ? 'Ralph AI declined to answer.' : 'Ralph AI finished responding.');
+    announce(msg.error ? msg.error.title : msg.refused ? 'Kapitan declined to answer.' : 'Kapitan finished responding.');
   });
 }
 
@@ -877,9 +877,9 @@ function handleError(err, conv, msg) {
   } else if (err.kind === 'http' && status === 400) {
     msg.error = { title: 'The request couldn’t be processed.', detail: code ? `(${String(code).slice(0, 120)})` : '' };
   } else if (err.kind === 'network') {
-    msg.error = { title: 'Network problem.', detail: 'Couldn’t reach Ralph AI. Check your connection and retry.' };
+    msg.error = { title: 'Network problem.', detail: 'Couldn’t reach Kapitan. Check your connection and retry.' };
   } else if (err.kind === 'server' || err.kind === 'http') {
-    msg.error = { title: 'Ralph AI hit a snag.', detail: 'Something went wrong on the server. Please retry.' };
+    msg.error = { title: 'Kapitan hit a snag.', detail: 'Something went wrong on the server. Please retry.' };
   } else if (err.kind === 'empty') {
     msg.error = { title: 'No answer came back.', detail: 'Please retry.' };
   } else {
@@ -930,7 +930,7 @@ $('gateForm').addEventListener('submit', async (e) => {
       accessCode = code;
       store.set(KEYS.code, code);
       closeModal('gate');
-      toast('Unlocked — welcome to Ralph AI Chat!');
+      toast('Unlocked — welcome to Kapitan Chat!');
       const next = afterGate; afterGate = null;
       if (next) next(); else prompt.focus();
       return;

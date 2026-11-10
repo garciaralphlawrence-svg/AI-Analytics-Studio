@@ -246,7 +246,7 @@ td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .toast.on { opacity: 1; transform: translate(-50%, 0); }
 
 /* presentation mode */
-body.present .topbar, body.present .analyst, body.present .data-preview, body.present .card-tools, body.present #ralph-ai-root { display: none !important; }
+body.present .topbar, body.present .analyst, body.present .data-preview, body.present .card-tools, body.present #kapitan-root { display: none !important; }
 body.present .dashboard { grid-template-columns: 1fr; max-width: none; padding: 32px 48px; }
 body.present .board-head h2 { font-size: 2.3rem; }
 
@@ -280,7 +280,7 @@ body.present .board-head h2 { font-size: 2.3rem; }
 @media print {
   :root { --card: #fff; --text-1: #111; --text-2: #444; --border: #ddd; }
   body { background: #fff; }
-  .bg-aurora, .topbar, .analyst, .card-tools, .data-preview, #ralph-ai-root, .view-toggle { display: none !important; }
+  .bg-aurora, .topbar, .analyst, .card-tools, .data-preview, #kapitan-root, .view-toggle { display: none !important; }
   .dashboard { display: block; padding: 0; }
   .card { box-shadow: none; backdrop-filter: none; break-inside: avoid; animation: none; }
   .grid { grid-template-columns: 1fr 1fr; }
