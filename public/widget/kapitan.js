@@ -24,7 +24,7 @@
   var KB = null;               // loaded from /widget/kb.json (also powers offline answers)
   var history = load();        // [{role, content}]
   var busy = false;
-  var offline = false;
+  var offline = API === 'none'; // data-api="none" → free mode: answer from kb.json only, no AI server
 
   function load() {
     try { return JSON.parse(sessionStorage.getItem(STORE_KEY)) || []; } catch (e) { return []; }
@@ -58,7 +58,7 @@
     '<section class="panel" role="dialog" aria-label="Kapitan chat" aria-hidden="true">' +
       '<header>' +
         '<span class="orb sm"><span class="orb-core"></span></span>' +
-        '<div class="title"><strong>Kapitan</strong><span class="status"><i></i><em>Online · knows all of Ralph\'s sites</em></span></div>' +
+        '<div class="title"><strong>Kapitan</strong><span class="status"><i></i><em>Online · knows all these websites</em></span></div>' +
         '<button class="icon expand" title="Expand" aria-label="Expand chat">' + ICON.expand + '</button>' +
         '<button class="icon reset" title="New chat" aria-label="Start a new chat">' + ICON.refresh + '</button>' +
         '<button class="icon close" title="Close" aria-label="Close chat">' + ICON.close + '</button>' +
@@ -279,7 +279,7 @@
   function offlineAnswer(q) {
     if (!KB) return "I'm having trouble connecting right now. Please try again in a moment, or email **rlawrencegarcia03@gmail.com**.";
     if (/^(hi|hello|hey|kumusta|good (morning|afternoon|evening))\b/i.test(q.trim())) {
-      return (siteInfo() && siteInfo().greeting) || "Hi! Ask me about any of Ralph's websites.";
+      return (siteInfo() && siteInfo().greeting) || "Hi! Ask me about any of these websites.";
     }
     var weights = idf();
     var qt = tokens(q);
@@ -301,7 +301,7 @@
 
     if (!scored.length) {
       var s = siteInfo();
-      return "I don't have that detail handy. You can ask me about Ralph's experience and projects, KMM Travel, IslaKeys, Biz Buddy or AI Analytics Studio — or reach Ralph at **rlawrencegarcia03@gmail.com**." +
+      return "I don't have that detail handy. You can ask me about KMM Travel, IslaKeys, Biz Buddy, AI Analytics Studio, the AI Resibo Maker or Future Minds Academy — or send a message through the portfolio's [contact form](https://garciaralphlawrence-svg.github.io/Ralph-Portfolio/#contact)." +
         (s ? '\n\nTry: ' + s.suggestions.slice(0, 2).map(function (x) { return '“' + x + '”'; }).join(' or ') : '');
     }
     var lines = scored.map(function (x) { return '- ' + (x.c.site !== SITE ? '**' + x.c.siteName + ':** ' : '') + x.c.text; });

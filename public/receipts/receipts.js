@@ -194,6 +194,7 @@ function render() {
   const when = viewing ? new Date(viewing.issuedAt) : new Date();
   const number = viewing ? viewing.number : nextReceiptNumber(settings.prefix, counter);
   const status = '';
+  const nItems = t.lines.reduce((a, l) => a + l.quantity, 0);
   const line = (label, value, cls = '') => `<div class="tl ${cls}"><span>${label}</span><span>${value}</span></div>`;
 
   $('paper').innerHTML = `${status}
@@ -216,16 +217,18 @@ function render() {
         <div class="pi-sub">${l.quantity} × ${peso(l.unit_price)}</div>`).join('') : '<p class="p-empty">Items will appear here</p>'}
     </div>
     <div class="p-totals">
-      ${line(`Subtotal (${t.lines.reduce((a, l) => a + l.quantity, 0)} item${t.lines.length === 1 && t.lines[0].quantity === 1 ? '' : 's'})`, peso(t.gross))}
-      ${t.lessVat ? line('Less: VAT (12%)', '−' + peso(t.lessVat)) : ''}
+      ${line(`${settings.vatRegistered ? 'Total Sales (VAT Inclusive)' : 'Subtotal'} · ${nItems} item${nItems === 1 ? '' : 's'}`, peso(t.gross))}
+      ${t.lessVat ? line('Less: VAT (12%)', '−' + peso(t.lessVat)) + line('Amount Net of VAT', peso(t.vatExemptSales)) : ''}
       ${t.discount ? line(`Less: ${t.discountLabel}`, '−' + peso(t.discount)) : ''}
-      ${line('TOTAL DUE', peso(t.total), 'grand')}
+      ${line('TOTAL AMOUNT DUE', peso(t.total), 'grand')}
       ${t.tendered !== null ? line('Cash', peso(t.tendered)) + line(t.short ? 'Balance due' : 'Change', peso(t.short ? t.total - t.tendered : t.change), t.short ? 'warn' : '') : line('Paid via', esc(sale.payment_method))}
     </div>
     ${settings.vatRegistered ? `<div class="p-vat">
-      ${t.vatExemptSales ? line('VAT-exempt sales', peso(t.vatExemptSales)) : line('VATable sales', peso(t.vatableSales)) + line('VAT (12%)', peso(t.vat))}
-      ${line('Zero-rated sales', peso(0))}
-    </div>` : ''}
+      ${line('VATable Sales', peso(t.vatableSales))}
+      ${line('VAT-Exempt Sales', peso(t.vatExemptSales))}
+      ${line('Zero-Rated Sales', peso(0))}
+      ${line('VAT Amount (12%)', peso(t.vat))}
+    </div>` : `<div class="p-vat">${line('Non-VAT registered', 'No VAT charged')}</div>`}
     ${sale.discount_type === 'senior' || sale.discount_type === 'pwd' ? `<div class="p-sign">${sale.discount_type === 'senior' ? 'OSCA' : 'PWD'} ID no.: ____________<br>Signature: ____________</div>` : ''}
     ${sale.notes ? `<p class="p-notes">Note: ${esc(sale.notes)}</p>` : ''}
     <footer class="p-foot">

@@ -10,8 +10,8 @@ export const SITES = {
     greeting: "Hi! I'm Kapitan 👋 Ask me about any of these websites.",
     suggestions: ["What is AI Analytics Studio?", "What is KMM Travel?", "What is IslaKeys?", "What is BizBuddy?"],
     facts: `
-Portfolio website by Ralph Garcia. Contact form on the portfolio: [Contact](https://garciaralphlawrence-svg.github.io/Ralph-Portfolio/#contact)
-Projects list: UERM QMS; Future Minds Academy website + school management system; AI Analytics Studio; KMM Travel & Tours; IslaKeys; Biz Buddy; PredScan; EASTELLA (agentic information software documentation); Algebot (algebra chatbot documentation).`,
+Portfolio website by Ralph Garcia showing his projects with screenshots and links to each live website. Contact form on the portfolio: [Contact](https://garciaralphlawrence-svg.github.io/Ralph-Portfolio/#contact)
+Websites on the portfolio: AI Analytics Studio, AI Resibo Maker, KMM Travel Co., IslaKeys, Biz Buddy and Future Minds Academy.`,
   },
 
   studio: {
@@ -27,7 +27,7 @@ Privacy & data safety (is my data safe or secure?): files are parsed in the brow
 Sample datasets: Coffee shop sales, Philippine real-estate listings, Travel bookings, School enrollment.
 Extras: dark/light theme, presentation mode, export the dashboard to PDF/print, CSV download of any chart's data.
 Tech: vanilla JavaScript, Apache ECharts, SheetJS, Netlify Functions, Claude (Anthropic) with tool use.
-It is the hub of Kapitan AI Suite, together with the AI Resibo Maker (receipts) and Kapitan Chat (ChatGPT-style assistant). Sales from the Resibo Maker open here as a dashboard with one click.
+It works together with the AI Resibo Maker (receipts): sales from the Resibo Maker open here as a dashboard with one click.
 Open it: [AI Analytics Studio](https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/)`,
   },
 
@@ -37,23 +37,13 @@ Open it: [AI Analytics Studio](https://garciaralphlawrence-svg.github.io/AI-Anal
     greeting: "Hi! I'm Kapitan 🧾 Describe a sale and I'll help you make the resibo — or ask how it works.",
     suggestions: ["How do I make a receipt?", "Does it compute senior discount?", "Can it scan a paper receipt?", "Is this a BIR official receipt?"],
     facts: `
-AI Resibo Maker (part of Kapitan AI Suite, built by Ralph Garcia). Describe a sale the way you'd tell a cashier — typed or spoken, in English, Filipino or Taglish (e.g. "2 spanish latte tig-165, 1 ensaymada 85, gcash, si Juan") — and the AI fills in the receipt: customer, items, quantities, prices, payment method (Cash, GCash, Maya, Card, Bank Transfer), cash received and discounts. Everything stays editable before issuing.
-Money is computed exactly by the app, not the AI: prices are VAT-inclusive; the receipt shows VATable sales and 12% VAT. Senior Citizen and PWD discounts follow the law: VAT is removed first, then 20% off (e.g. ₱750 of items → ₱535.71 due), and the receipt has a line for the OSCA/PWD ID and signature. Promo % discounts and change for cash payments are supported.
+AI Resibo Maker (part of AI Analytics Studio, built by Ralph Garcia). Describe a sale the way you'd tell a cashier — typed or spoken, in English, Filipino or Taglish (e.g. "2 spanish latte tig-165, 1 ensaymada 85, gcash, si Juan") — and the AI fills in the receipt: customer, items, quantities, prices, payment method (Cash, GCash, Maya, Card, Bank Transfer), cash received and discounts. Everything stays editable before issuing.
+Money and VAT are computed exactly by the app, not the AI. Prices are VAT-inclusive (12%). Like a standard Philippine receipt, it shows Total Sales (VAT Inclusive), TOTAL AMOUNT DUE, and a VAT breakdown: VATable Sales, VAT-Exempt Sales, Zero-Rated Sales and VAT Amount (12%). Example: ₱415 sale → VATable Sales ₱370.54 + VAT ₱44.46. VAT can be turned off in Business settings for non-VAT businesses. Senior Citizen and PWD discounts follow the law: VAT is removed first, then 20% off (e.g. ₱750 of items → Less VAT ₱80.36 → Net of VAT ₱669.64 → less 20% ₱133.93 → ₱535.71 due), and the receipt has a line for the OSCA/PWD ID and signature. Promo % discounts and change for cash payments are supported.
 Issue the receipt to give it a number (e.g. KC-000001), then print it or save as PDF (80mm receipt layout), download it as an image, or share it from a phone. Business name, address, TIN, prefix and footer are set in Business settings.
 Receipt scanner: take a photo of any paper receipt and the AI reads the merchant, date, items, VAT and total into an expense record for review.
 "Analyze my sales with AI" sends all issued receipts to AI Analytics Studio, which builds a sales dashboard automatically (there's a "Load 160 sample receipts" button for demos). Scanned expenses can be analyzed the same way.
 Not a BIR Official Receipt or Sales Invoice: those require a BIR Authority to Print or an accredited POS. Data is saved in the browser only.
 Open it: [AI Resibo Maker](https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/receipts/)`,
-  },
-
-  aichat: {
-    name: "Kapitan Chat",
-    url: "https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/chat/",
-    greeting: null,
-    suggestions: [],
-    facts: `
-Kapitan Chat (part of Kapitan AI Suite) is a ChatGPT-style assistant built by Ralph Garcia on Claude: conversations saved in a sidebar, answers that stream in live with formatted text and code, stop and regenerate, voice input, and image upload so it can describe photos or read documents. It needs a demo access code from Ralph so his AI credits can't be misused by strangers.
-Open it: [Kapitan Chat](https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/chat/)`,
   },
 
   kmm: {
@@ -73,7 +63,7 @@ Tour packages (price per person, default nights):
 - Ilocos Heritage Tour — ₱11,200, 3 nights, Vigan & sand dunes
 Destination search also covers El Nido, Coron, Chocolate Hills (Bohol), Mayon Volcano (Albay), Mount Pulag, Banaue Rice Terraces, Vigan, Intramuros, Kawasan Falls, Batanes and Siquijor.
 Dynamic discounts (combined, capped at 35% of the total): 5% for 3–4 travellers or 10% for 5+; 2% per extra night beyond the package's default; 8% for travel dates April–October.
-How to book: choose a package in "Popular Destinations", adjust the nights, click Book Now, log in, pick travellers and a date, and confirm. Custom trips: fill in the KMM Concierge Form ("Let's Talk") — destination, group type, budget, stay style, experiences, transport and dining preferences — and a travel specialist follows up by email.
+How to book a tour, trip or package with KMM: choose a package in "Popular Destinations", adjust the nights, click Book Now, log in, pick travellers and a date, and confirm. Custom trips: fill in the KMM Concierge Form ("Let's Talk") — destination, group type, budget, stay style, experiences, transport and dining preferences — and a travel specialist follows up by email.
 Pages: [Tour packages](https://garciaralphlawrence-svg.github.io/KMM/#packages) · [Custom trip form](https://garciaralphlawrence-svg.github.io/KMM/#contact)`,
   },
 
