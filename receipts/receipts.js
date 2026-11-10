@@ -193,7 +193,7 @@ function render() {
   const t = computeTotals(sale, settings);
   const when = viewing ? new Date(viewing.issuedAt) : new Date();
   const number = viewing ? viewing.number : nextReceiptNumber(settings.prefix, counter);
-  const status = viewing ? '' : '<div class="draft-stamp">DRAFT</div>';
+  const status = '';
   const line = (label, value, cls = '') => `<div class="tl ${cls}"><span>${label}</span><span>${value}</span></div>`;
 
   $('paper').innerHTML = `${status}
@@ -265,7 +265,7 @@ async function receiptPng() {
   const canvas = await window.html2canvas($('paper'), { scale: 2, backgroundColor: '#ffffff', useCORS: true });
   return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
 }
-const fileName = () => `${(viewing ? viewing.number : 'receipt-draft')}.png`;
+const fileName = () => `${(viewing ? viewing.number : 'receipt')}.png`;
 $('btnPng').addEventListener('click', async () => {
   try {
     const blob = await receiptPng();
