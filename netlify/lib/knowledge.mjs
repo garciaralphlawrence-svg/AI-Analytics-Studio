@@ -80,7 +80,7 @@ Portals (sign up with Client or Broker account type; sign-up has verification an
 - Client dashboard: save listings, send inquiries to brokers, see broker replies, application status tracker (verified → profile submitted → viewing → reservation & due diligence), quick messages and drafts.
 - Broker portal: lead queue of buyer inquiries (reply to move leads forward), listing manager with inquiry counts, compliance checklist (PRC license, DHSUD registration, CPD units), follow-up notes.
 - Admin dashboard: account totals by role, recent accounts, inquiry activity, contact-form messages, restore demo accounts.
-Demo accounts (this is a demo site): Admin admin@islakeys.ph / admin12345 · Client client.test@islakeys.ph / client123 · Broker broker.test@islakeys.ph / broker123.
+Demo site: ready-made demo accounts (client, broker and admin) are shown on the [Login page](https://garciaralphlawrence-svg.github.io/IslaKeys/login.html), so you can try every portal without signing up.
 General buying note: foreigners generally can't own land in the Philippines but can own condominium units within the 40% foreign-ownership limit of a condo project — recommend confirming with a licensed broker or lawyer.
 Pages: [Home](https://garciaralphlawrence-svg.github.io/IslaKeys/) · [Login / Sign up](https://garciaralphlawrence-svg.github.io/IslaKeys/login.html)`,
   },
@@ -98,7 +98,7 @@ How it works (demo app — data is saved in the visitor's browser and can be res
 - Clients sign up, post tasks (title, description, budget in USD, category: Administrative, Content, Research, Travel, Milestone, optional brief file), accept applicants, chat per task, start/complete/reopen tasks, release payment and rate the VA, browse "Find a VA", see top VA matches, view VA profiles, invite VAs to tasks, schedule calls and send private messages.
 - VAs sign up with application details (CV/portfolio links and a requirements checklist), apply to opportunities, work assigned tasks with chat, accept or decline call invitations, take VA courses and download completion certificates, and edit their profile (skills, tools, experience, hourly rate, availability, timezone, verification document).
 - Admins see platform stats, enquiries, VA applications (approve/reject/verify, bulk approve), task moderation (edit/delete) and CSV exports of users, tasks and enquiries.
-Demo logins (shown in the login box): Client client@bizbuddy.com / client123 · VA va@bizbuddy.com / va12345 · Admin admin@bizbuddy.com / admin123.
+Demo site: ready-made demo logins (client, VA and admin) are shown in the login box on the [Biz Buddy site](https://garciaralphlawrence-svg.github.io/BizBuddy/), so you can try every dashboard without signing up.
 Pages: [Home](https://garciaralphlawrence-svg.github.io/BizBuddy/) · [Contact](https://garciaralphlawrence-svg.github.io/BizBuddy/#contact)`,
   },
 
@@ -108,7 +108,7 @@ Pages: [Home](https://garciaralphlawrence-svg.github.io/BizBuddy/) · [Contact](
     greeting: null,
     suggestions: [],
     facts: `
-Future Minds Academy of Mandaluyong City — a private Kindergarten to Grade 6 school at 650 Ma. Isabel Bldg., Boni Ave., Barangay Plainview, Mandaluyong City. Phone (02) 7949-7084. Office hours Monday–Friday, 8:00 AM–5:00 PM. Website built by Ralph: public site with admissions, online application, events and gallery, plus a full school management system (student, teacher, grade-approver and admin portals, grading workflow, attendance kiosk, audit logs) on Next.js, TypeScript, PostgreSQL and Prisma.
+Future Minds Academy of Mandaluyong City — a private Kindergarten to Grade 6 school at 650 Ma. Isabel Bldg., Boni Ave., Barangay Plainview, Mandaluyong City. Phone (02) 7949-7084. Office hours Monday–Friday, 8:00 AM–5:00 PM. Website built by Ralph: admissions information, online application, events and photo gallery.
 Website: [futuremindsacademyph.com](https://futuremindsacademyph.com/) · Apply online: [Apply](https://futuremindsacademyph.com/apply)`,
   },
 };

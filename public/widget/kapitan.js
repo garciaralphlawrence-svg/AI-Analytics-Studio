@@ -277,7 +277,7 @@
     return IDF;
   }
   function offlineAnswer(q) {
-    if (!KB) return "I'm having trouble connecting right now. Please try again in a moment, or email **rlawrencegarcia03@gmail.com**.";
+    if (!KB) return "I'm having trouble connecting right now. Please try again in a moment, or use the [contact form](https://garciaralphlawrence-svg.github.io/Ralph-Portfolio/#contact).";
     if (/^(hi|hello|hey|kumusta|good (morning|afternoon|evening))\b/i.test(q.trim())) {
       return (siteInfo() && siteInfo().greeting) || "Hi! Ask me about any of these websites.";
     }
