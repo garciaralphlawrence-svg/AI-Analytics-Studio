@@ -2,7 +2,7 @@
 // while the AI analyst works (and on its own if the AI is unavailable).
 
 const q = (o) => ({ measure: null, agg: 'count', groupBy: null, timeGrain: 'none', filters: [], sort: 'desc', limit: 0, ...o });
-const nice = (s) => s.replace(/_(php|usd|amt)$/i, '').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+const nice = (s) => s.replace(/\s*\([^)]*\)\s*/g, ' ').trim().replace(/_(php|usd|amt)$/i, '').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
 export function autoDashboard(dataset) {
   const cols = dataset.columns;

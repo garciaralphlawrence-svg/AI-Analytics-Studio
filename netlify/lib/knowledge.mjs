@@ -21,12 +21,12 @@ Websites on the portfolio: CareSight (predictive hospital analytics), AI Analyti
     suggestions: ["How does this work?", "Is my data safe?", "What files can I upload?", "Try a sample dataset"],
     facts: `
 AI Analytics Studio — built by Ralph Garcia. Upload any Excel (.xlsx/.xls) or CSV file, or pick a sample dataset, and it instantly builds an interactive dashboard: KPI cards, trend lines, category breakdowns and a data table, all generated automatically from the column types it detects (numbers, dates, categories, text).
-Then the AI analyst (Claude) explores the data and writes an executive dashboard: a title and summary, the most important charts, 4–5 numeric insights, and suggested follow-up questions.
-"Ask your data": type a question in plain English (e.g. "Which region had the highest revenue in Q2?") and the AI answers with exact numbers and a chart. Every number is computed on the full dataset by a query engine — the AI never guesses from a sample.
-Privacy & data safety (is my data safe or secure?): files are parsed in the browser; for AI analysis the rows are sent to the secure backend only to compute aggregates; nothing is stored. Up to 20,000 rows and 60 columns.
+Then the Smart Analyst panel checks every row and lists the key insights: who leads, growth or decline over time, the peak month, big gaps between groups, numbers that move together, and blank cells. It runs entirely in your browser, is free, and needs no account or API key.
+"Ask your data": type a question in plain English and the analyst answers with exact numbers and a chart you can pin to the dashboard. Examples: "Which branch has the highest revenue?", "What was the best month for sales?", "Average rating by channel", "Total revenue for Makati", "How many bookings in Boracay?", "Forecast next month's revenue", "What drives rating?", "Are there missing values?", "What are the 3 most surprising findings?". Every number is computed on the full dataset, never guessed from a sample.
+Privacy & data safety (is my data safe or secure?): files are read and analysed entirely in your browser. Your data is never uploaded to a server and nothing is stored. Up to 20,000 rows and 60 columns.
 Sample datasets: Coffee shop sales, Philippine real-estate listings, Travel bookings, School enrollment.
 Extras: dark/light theme, presentation mode, export the dashboard to PDF/print, CSV download of any chart's data.
-Tech: vanilla JavaScript, Apache ECharts, SheetJS, Netlify Functions, Claude (Anthropic) with tool use.
+Tech: vanilla JavaScript, Apache ECharts, SheetJS, and an in-browser query engine and analyst.
 It works together with the AI Resibo Maker (receipts): sales from the Resibo Maker open here as a dashboard with one click.
 Open it: [AI Analytics Studio](https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/)`,
   },

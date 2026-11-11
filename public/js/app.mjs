@@ -2,6 +2,7 @@ import { profileData, readFile } from './profile.mjs';
 import { SAMPLES } from './samples.mjs';
 import { autoDashboard, starterQuestions } from './autodash.mjs';
 import { renderChart, disposeCharts, formatValue, prettyLabel } from './charts.mjs';
+import { localAnswer, localInsights, localSummary } from './local-analyst.mjs';
 
 const $ = (id) => document.getElementById(id);
 // On GitHub Pages there are no functions, so call the AI backend (Vercel) directly.
@@ -9,6 +10,9 @@ const API = location.hostname.endsWith('github.io')
   ? 'https://ralph-ai-suite.vercel.app/api/analyze'
   : '/api/analyze';
 const MAX_ROWS = 20000;
+// The cloud analyst needs a paid API key. Without one, the free local analyst
+// (local-analyst.mjs) answers in the browser. Set to true once a key is set up.
+const CLOUD_AI = false;
 
 const state = {
   dataset: null,       // { name, columns, rows }
@@ -149,6 +153,7 @@ function start(name, raw) {
   const { columns, rows } = profileData(raw);
   state.dataset = { name, columns, rows };
   state.autoSpec = autoDashboard(state.dataset);
+  if (!CLOUD_AI) state.autoSpec.summary = localSummary(state.dataset);
   state.aiSpec = null;
   state.view = 'auto';
   $('datasetName').textContent = name;
@@ -160,7 +165,7 @@ function start(name, raw) {
   renderBoard();
   renderPreview();
   setSuggestions(starterQuestions(state.dataset));
-  runAIDashboard();
+  if (CLOUD_AI) runAIDashboard(); else runLocalAnalyst();
 }
 
 function currentSpec() { return state.view === 'ai' && state.aiSpec ? state.aiSpec : state.autoSpec; }
@@ -299,6 +304,25 @@ async function callStep(body, onEvent, timeoutMs) {
   } finally { clearTimeout(timer); }
 }
 
+// Free analyst: finds the key insights on every row, right in the browser.
+async function runLocalAnalyst() {
+  const ds = state.dataset;
+  const insights = $('insights');
+  insights.innerHTML = `<div class="thinking"><div class="think-orb"></div><div><strong>Analyst is exploring your data</strong>
+    <p class="think-sub muted">Checking ${ds.rows.length.toLocaleString()} rows…</p></div></div>`;
+  $('analystStatus').textContent = 'Analysing…';
+  await new Promise((r) => setTimeout(r, 700));
+  if (state.dataset !== ds) return;
+  try {
+    renderInsights(localInsights(ds), null);
+  } catch (e) {
+    console.error('local insights failed', e);
+    insights.innerHTML = '<div class="notice">Ask a question below to explore this data.</div>';
+  }
+  $('analystStatus').textContent = `Instant mode · all ${ds.rows.length.toLocaleString()} rows checked on your device`;
+  scrollAnalyst();
+}
+
 async function runAIDashboard() {
   const ds = state.dataset;
   const insights = $('insights');
@@ -357,7 +381,7 @@ function sanitizeSpec(r) {
 
 function renderInsights(list, queries) {
   const tone = { positive: '▲', negative: '▼', neutral: '●' };
-  $('insights').innerHTML = `<h4 class="ins-title">Key insights <span class="muted">· verified with ${queries} queries</span></h4>` +
+  $('insights').innerHTML = `<h4 class="ins-title">Key insights <span class="muted">· ${queries === null ? `checked on all ${state.dataset.rows.length.toLocaleString()} rows` : `verified with ${queries} queries`}</span></h4>` +
     list.map((x, i) => `<article class="insight ${x.tone}" style="animation-delay:${i * 120}ms">
       <span class="tone">${tone[x.tone] || '●'}</span><div><strong></strong><p></p></div></article>`).join('');
   $('insights').querySelectorAll('.insight').forEach((el, i) => {
@@ -383,11 +407,11 @@ async function ask(question) {
   scrollAnalyst();
   const ds = state.dataset;
   try {
-    const { result, queries } = await callAI({ mode: 'ask', question }, (ev) => {
+    const { result, queries } = CLOUD_AI ? await callAI({ mode: 'ask', question }, (ev) => {
       if (ev.type === 'query') aEl.querySelector('.muted').textContent = `ran ${ev.queries} ${ev.queries === 1 ? 'query' : 'queries'}: ${ev.label}…`;
-    });
+    }) : await askLocal(question);
     if (state.dataset !== ds) return;
-    aEl.innerHTML = `<div class="md">${md(result.answer || '')}</div><div class="a-meta muted">✓ ${queries} ${queries === 1 ? 'query' : 'queries'} on ${ds.rows.length.toLocaleString()} rows</div>`;
+    aEl.innerHTML = `<div class="md">${md(result.answer || '')}</div><div class="a-meta muted">✓ ${queries === null ? 'calculated' : `${queries} ${queries === 1 ? 'query' : 'queries'}`} on ${ds.rows.length.toLocaleString()} rows</div>`;
     if (result.chart && result.chart.query) {
       const card = document.createElement('div');
       card.className = 'card chart mini';
@@ -416,6 +440,11 @@ async function ask(question) {
     state.asking = false;
     scrollAnalyst();
   }
+}
+
+async function askLocal(question) {
+  await new Promise((r) => setTimeout(r, 450)); // let the typing dots show
+  return { result: localAnswer(state.dataset, question), queries: null };
 }
 
 function scrollAnalyst() { const b = $('analystBody'); b.scrollTop = b.scrollHeight; }

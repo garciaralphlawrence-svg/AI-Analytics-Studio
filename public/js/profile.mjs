@@ -20,14 +20,14 @@ function parseNumber(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-const DATE_RE = /^(\d{4}-\d{1,2}-\d{1,2}([ T].*)?|\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|[A-Za-z]{3,9}\.? \d{1,2},? \d{4}|\d{1,2} [A-Za-z]{3,9}\.? \d{4})$/;
+const DATE_RE = /^(\d{4}-\d{1,2}(-\d{1,2}([ T].*)?)?|\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|[A-Za-z]{3,9}\.? \d{1,2},? \d{4}|\d{1,2} [A-Za-z]{3,9}\.? \d{4})$/;
 function parseDate(v) {
   if (v instanceof Date) return toISO(v);
   if (typeof v !== 'string') return null;
   const s = v.trim();
   if (!DATE_RE.test(s)) return null;
-  const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-  if (iso) return toISO(new Date(+iso[1], +iso[2] - 1, +iso[3]));
+  const iso = s.match(/^(\d{4})-(\d{1,2})(?:-(\d{1,2}))?/);
+  if (iso) return +iso[2] >= 1 && +iso[2] <= 12 ? toISO(new Date(+iso[1], +iso[2] - 1, +(iso[3] || 1))) : null;
   return toISO(new Date(s));
 }
 
