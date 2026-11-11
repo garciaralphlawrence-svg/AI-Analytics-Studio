@@ -11,7 +11,7 @@ export const SITES = {
     suggestions: ["What is AI Analytics Studio?", "What is KMM Travel?", "What is IslaKeys?", "What is BizBuddy?"],
     facts: `
 Portfolio website by Ralph Garcia showing his projects with screenshots and links to each live website. Contact form on the portfolio: [Contact](https://garciaralphlawrence-svg.github.io/Ralph-Portfolio/#contact)
-Websites on the portfolio: AI Analytics Studio, AI Resibo Maker, KMM Travel Co., IslaKeys, Biz Buddy and Future Minds Academy.`,
+Websites on the portfolio: CareSight (predictive hospital analytics), AI Analytics Studio, AI Resibo Maker, KMM Travel Co., IslaKeys, Biz Buddy and Future Minds Academy.`,
   },
 
   studio: {
@@ -44,6 +44,22 @@ Receipt scanner: take a photo of any paper receipt and the AI reads the merchant
 "Analyze my sales with AI" sends all issued receipts to AI Analytics Studio, which builds a sales dashboard automatically (there's a "Load 160 sample receipts" button for demos). Scanned expenses can be analyzed the same way.
 Not a BIR Official Receipt or Sales Invoice: those require a BIR Authority to Print or an accredited POS. Data is saved in the browser only.
 Open it: [AI Resibo Maker](https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/receipts/)`,
+  },
+
+  caresight: {
+    name: "CareSight",
+    url: "https://garciaralphlawrence-svg.github.io/CareSight/",
+    greeting: "Hi! I'm Kapitan 🩺 Ask me how CareSight predicts readmissions and no-shows, or how the forecast works.",
+    suggestions: ["What does CareSight do?", "How accurate are the models?", "How does the no-show prediction work?", "Is this real patient data?"],
+    facts: `
+CareSight — Predictive Hospital Analytics, built by Ralph Garcia. It predicts which discharged patients are likely to be readmitted within 30 days, which outpatient appointments are likely to be no-shows, and forecasts daily hospital admissions for the next 30 days.
+Machine learning models: for each prediction it trains a Logistic Regression and a Random Forest (30 decision trees) right in the browser on 80% of the data and tests them on the other 20%; the model with the higher AUC is used. Accuracy (AUC): about 0.79 for readmission and 0.75 for no-shows. The decision threshold is tuned for the best F1 score.
+Readmission risk factors used: age, length of stay, admissions in the past 12 months, ER visits, number of discharge medications, abnormal labs, heart failure, kidney disease, COPD, diabetes, hypertension, cancer, follow-up visit booked, department, payer and discharge disposition. The biggest drivers are prior admissions, number of medications, age and length of stay; booking a follow-up visit lowers risk.
+No-show prediction uses days booked in advance, SMS reminder, previous no-shows, distance from the hospital, age, clinic, day of week, time slot, payer, new patient and rainy season. SMS reminders and shorter booking lead times reduce no-shows the most.
+Volume forecast: daily admissions are forecast with Holt-Winters exponential smoothing (trend + weekly pattern), with a 95% range, checked by a 30-day backtest (about 9% average error). It also suggests how many admitting nurses each day needs.
+What-If Simulator: change a patient's details (age, conditions, follow-up, medications) and see the predicted risk, the reasons behind it, and suggested actions that would lower it.
+Data: all records are synthetic (fake but realistic) — no real patient data. It is a portfolio demo, not a medical device. Everything runs in the browser; nothing is uploaded.
+Open it: [CareSight](https://garciaralphlawrence-svg.github.io/CareSight/)`,
   },
 
   kmm: {
