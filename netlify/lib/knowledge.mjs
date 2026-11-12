@@ -11,7 +11,7 @@ export const SITES = {
     suggestions: ["What is AI Analytics Studio?", "What is KMM Travel?", "What is IslaKeys?", "What is BizBuddy?"],
     facts: `
 Portfolio website by Ralph Garcia showing his projects with screenshots and links to each live website. Contact form on the portfolio: [Contact](https://garciaralphlawrence-svg.github.io/Ralph-Portfolio/#contact)
-Websites on the portfolio: CareSight (predictive hospital analytics), AI Analytics Studio, AI Resibo Maker, KMM Travel Co., IslaKeys, Biz Buddy and Future Minds Academy.`,
+Websites on the portfolio: SPC Studio (statistical process control / Six Sigma), CareSight (predictive hospital analytics), AI Analytics Studio, AI Resibo Maker, KMM Travel Co., IslaKeys, Biz Buddy and Future Minds Academy.`,
   },
 
   studio: {
@@ -44,6 +44,24 @@ Receipt scanner: take a photo of any paper receipt and the AI reads the merchant
 "Analyze my sales with AI" sends all issued receipts to AI Analytics Studio, which builds a sales dashboard automatically (there's a "Load 160 sample receipts" button for demos). Scanned expenses can be analyzed the same way.
 Not a BIR Official Receipt or Sales Invoice: those require a BIR Authority to Print or an accredited POS. Data is saved in the browser only.
 Open it: [AI Resibo Maker](https://garciaralphlawrence-svg.github.io/AI-Analytics-Studio/receipts/)`,
+  },
+
+  spc: {
+    name: "SPC Studio",
+    url: "https://garciaralphlawrence-svg.github.io/SPC-Studio/",
+    greeting: "Hi! I'm Kapitan 📈 Ask me what SPC is, how to read a control chart, or what Cpk means.",
+    suggestions: ["What is SPC Studio?", "What is Cpk?", "What are the control chart rules?", "Can I upload my own Excel file?"],
+    facts: `
+SPC Studio — Statistical Process Control in the browser, built by Ralph Garcia. SPC (statistical process control) uses statistics to check whether a process is stable and whether it meets its specification. It answers three questions: Is it stable? (control charts) Is it capable? (Cp, Cpk, Pp, Ppk) What do we fix first? (Pareto).
+Control charts: I-MR chart for individual values, X-bar R chart for subgroups of 2 to 10, and p chart for the proportion defective with varying sample sizes. Limits are the centre line plus or minus 3 sigma, using standard constants (d2, A2, D3, D4).
+Signal rules (Western Electric rules plus a trend rule): 1) one point beyond 3 sigma; 2) 2 of 3 points beyond 2 sigma on the same side; 3) 4 of 5 points beyond 1 sigma on the same side; 4) 8 points in a row on the same side of the centre line; 5) 6 points in a row steadily increasing or decreasing. Each signal is explained in plain English, and improvements are marked "better than usual".
+Capability: Cp and Cpk use within-subgroup sigma (what the process could do); Pp and Ppk use overall sigma (what it actually delivered); Cpm uses the target. It also shows expected and observed defects per million (PPM), Z.bench and the sigma level (Z.bench + 1.5 shift). Rule of thumb: Cpk of 1.33 or more is capable, 1.00 to 1.33 is marginal, below 1.00 is not capable. One-sided specs (only an upper or lower limit) are supported.
+Normality: Anderson-Darling test with a normal probability plot; if p is below 0.05 the PPM estimates should be treated with caution.
+Improvement what-if: sliders to move the average or reduce variation and see the new Ppk and defects per million, plus a one-click "centre on target".
+Pareto: ranks categories and highlights the vital few that make up about 80% of the problem.
+Your Data (upload): upload an Excel or CSV file on the Your Data tab. It guesses the right analysis and columns, reads LSL, USL and Target columns automatically, supports grouping by a column such as Hour or Batch, and can count raw rows for a Pareto. Templates can be downloaded. The file never leaves the browser.
+Demo data: lab turnaround time, bottle fill volume, documentation errors and complaint categories — all synthetic. The calculations were checked against SciPy. Printing / saving as PDF is built in.
+Open it: [SPC Studio](https://garciaralphlawrence-svg.github.io/SPC-Studio/)`,
   },
 
   caresight: {
