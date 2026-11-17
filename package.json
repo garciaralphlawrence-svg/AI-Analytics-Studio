@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build:kb": "node scripts/build-kb.mjs",
-    "build": "node scripts/build-kb.mjs"
+    "build": "node scripts/build-kb.mjs",
+    "test:kapitan": "node scripts/test-kapitan.mjs && node scripts/test-kapitan.mjs --holdout"
   }
 }

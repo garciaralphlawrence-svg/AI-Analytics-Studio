@@ -148,6 +148,9 @@ Website: [futuremindsacademyph.com](https://futuremindsacademyph.com/) · Apply 
   },
 };
 
+import { FAQ } from './faq.mjs';
+
 export const KNOWLEDGE = Object.entries(SITES)
-  .map(([key, s]) => `## ${s.name} (id: ${key}) — ${s.url}\n${s.facts.trim()}`)
+  .map(([key, s]) => `## ${s.name} (id: ${key}) — ${s.url}\n${s.facts.trim()}` +
+    ((FAQ[key] || []).length ? '\nCommon questions:\n' + FAQ[key].map(f => `Q: ${f.q[0]}\nA: ${f.a}`).join('\n') : ''))
   .join('\n\n');
