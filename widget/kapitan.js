@@ -74,6 +74,7 @@
     '</section>';
 
   var $ = function (s) { return root.querySelector(s); };
+  if (offline) root.querySelector('footer').textContent = 'Kapitan · instant answers about this site';
   var launcher = $('.launcher'), panel = $('.panel'), body = $('.body'), chips = $('.chips');
   var form = $('.composer'), input = $('textarea'), sendBtn = $('.send'), micBtn = $('.mic');
 
@@ -87,6 +88,8 @@
   var greetIfIdle = function () { if (!history.length && !body.children.length) greet(); };
   fetch(ASSETS + '/kb.json').then(function (r) { return r.json(); }).then(function (kb) {
     KB = kb;
+    var si = siteInfo();
+    if (si) input.placeholder = 'Ask about ' + si.name.replace(/ —.*$/, '').replace(/\.$/, '') + '…';
     greetIfIdle();
   }).catch(greetIfIdle);
 
@@ -258,56 +261,179 @@
     })();
   }
 
-  // ---------- offline answers (keyword retrieval over kb.json) ----------
-  var STOP = 'a an the and or of to in on for with is are was be do does how what who where when which can i you me my your it this that about tell show please he his him she her they site website web page built build made make po ba ang ng sa mga ko mo'.split(' ');
-  function tokens(s) {
-    return (s.toLowerCase().match(/[a-z0-9₱]+/g) || []).filter(function (w) { return w.length > 1 && STOP.indexOf(w) === -1; });
+  // ---------- free-mode answers ----------
+  // BRAIN START — answer engine used when there's no AI server (data-api="none").
+  // Self-contained (uses only KB and SITE) so scripts/test-kapitan.mjs can score it.
+  // 1) Curated Q&A (kb.faq) wins when it fits; 2) else the single best fact sentence;
+  // 3) else an honest "not sure" — never a dump of loosely related paragraphs.
+  var STOP = {};
+  ('a an the and or of to in on at for with is are was were be been do does did how what who when which can could would should will ' +
+   'i you me my your yours our we us it its this that these those about tell show please he his him she her they them there here ' +
+   'have has had am get got any some just also like want need know there s whats im ok okay pls po ba ang ng sa mga ko mo na ka kayo ' +
+   'nyo yung ung lang naman pa si ni din rin may meron ano anong paano pano panu sino pwede puwede kaya ito to yan').split(' ').forEach(function (w) { STOP[w] = 1; });
+  // Same meaning → same token (English, Filipino and Taglish).
+  var SYN = {
+    cost: 'price', costs: 'price', fee: 'price', fees: 'price', rate: 'price', rates: 'price', pricing: 'price', presyo: 'price', much: 'price', expensive: 'price', magkano: 'price',
+    cheapest: 'cheap', affordable: 'cheap', budget: 'cheap', mura: 'cheap', lowest: 'cheap',
+    booking: 'book', reserve: 'book', reservation: 'book',
+    phone: 'contact', call: 'contact', email: 'contact', reach: 'contact', mobile: 'contact', telephone: 'contact', cellphone: 'contact', message: 'contact',
+    secure: 'safe', security: 'safe', privacy: 'safe', private: 'safe', safety: 'safe',
+    promo: 'discount', deal: 'discount',
+    owner: 'founder', ceo: 'founder', founded: 'founder',
+    location: 'where', located: 'where', address: 'where', office: 'where', area: 'where', saan: 'where', nasaan: 'where',
+    foreigner: 'foreign', expat: 'foreign', american: 'foreign', korean: 'foreign', chinese: 'foreign', japanese: 'foreign', australian: 'foreign', british: 'foreign', indian: 'foreign', european: 'foreign', nationality: 'foreign', citizen: 'foreign',
+    based: 'where', headquarter: 'where', hq: 'where',
+    assistant: 'va',
+    import: 'upload', excel: 'upload', xlsx: 'upload', csv: 'upload', spreadsheet: 'upload',
+    resibo: 'receipt', invoice: 'receipt',
+    accuracy: 'accurate', auc: 'accurate', performance: 'accurate',
+    libre: 'free', gratis: 'free',
+    test: 'demo', trial: 'demo', sample: 'demo',
+    signin: 'login', register: 'signup', registration: 'signup',
+    qualification: 'requirement',
+    abroad: 'international', overseas: 'international',
+    ilang: 'many', ilan: 'many'
+  };
+  var PHRASES = [
+    [/\bhow much\b|\bhm\b/g, ' price '], [/\bno[\s-]?shows?\b/g, ' noshow '], [/\bsign[\s-]?up\b/g, ' signup '],
+    [/\blog[\s-]?in\b|\bsign[\s-]?in\b/g, ' login '], [/\bvirtual assistants?\b/g, ' va '], [/\bmag[\s-]?book\b/g, ' book '],
+    [/\be[\s-]?mail\b/g, ' email ']
+  ];
+  function stem(w) {
+    if (w.length > 4 && /ies$/.test(w)) return w.slice(0, -3) + 'y';
+    if (w.length > 5 && /ing$/.test(w)) return w.slice(0, -3);
+    if (w.length > 4 && /ed$/.test(w)) return w.slice(0, -2);
+    if (w.length >= 3 && /s$/.test(w) && !/(ss|us|is)$/.test(w)) w = w.slice(0, -1);
+    if (w.length > 4 && /[^aeiou]e$/.test(w)) w = w.slice(0, -1); // store/stored → stor
+    return w;
   }
-  // Rare words ("Boracay") matter more than common ones ("price") — classic IDF weighting.
-  var IDF = null;
-  function idf() {
-    if (IDF || !KB) return IDF;
-    var df = {};
-    KB.chunks.forEach(function (c) {
-      var seen = {};
-      tokens(c.text + ' ' + c.siteName).forEach(function (t) { if (!seen[t]) { seen[t] = 1; df[t] = (df[t] || 0) + 1; } });
+  function norm(s) {
+    s = ' ' + String(s).toLowerCase().replace(/[’']/g, '') + ' ';
+    PHRASES.forEach(function (p) { s = s.replace(p[0], p[1]); });
+    var out = [];
+    (s.match(/[a-z0-9₱]+/g) || []).forEach(function (w) {
+      if (STOP[w] || w.length < 2) return;
+      w = SYN[w] || w;
+      w = SYN[stem(w)] || stem(w);
+      if (!STOP[w] && out.indexOf(w) === -1) out.push(w);
     });
-    IDF = {};
-    Object.keys(df).forEach(function (t) { IDF[t] = Math.log((KB.chunks.length + 1) / df[t]); });
-    return IDF;
+    return out;
   }
-  function offlineAnswer(q) {
-    if (!KB) return "I'm having trouble connecting right now. Please try again in a moment, or use the [contact form](https://garciaralphlawrence-svg.github.io/Ralph-Portfolio/#contact).";
-    if (/^(hi|hello|hey|kumusta|good (morning|afternoon|evening))\b/i.test(q.trim())) {
-      return (siteInfo() && siteInfo().greeting) || "Hi! Ask me about any of these websites.";
-    }
-    var weights = idf();
-    var qt = tokens(q);
-    var scored = KB.chunks.map(function (c) {
-      var ct = (c.text + ' ' + c.siteName).toLowerCase();
-      var score = 0;
-      qt.forEach(function (w) {
-        var wt = weights[w] || 2.5;
-        if (ct.indexOf(w) !== -1) score += wt;
-        else if (w.length > 4 && ct.indexOf(w.slice(0, -1)) !== -1) score += wt * 0.6; // packages → package
-      });
-      if (c.site === SITE) score *= 1.25;          // prefer the site the visitor is on
-      if (qt.some(function (w) { return w.length > 2 && c.siteName.toLowerCase().indexOf(w) !== -1; })) score += 3; // question names this site
-      return { c: c, score: score };
-    }).filter(function (x) { return x.score >= 2; }).sort(function (a, b) { return b.score - a.score; });
-    // Keep answers tight: the best match plus anything nearly as relevant.
-    var best = scored.length ? scored[0].score : 0;
-    scored = scored.filter(function (x) { return x.score >= best * 0.6; }).slice(0, 3);
 
-    if (!scored.length) {
-      var s = siteInfo();
-      return "I don't have that detail handy. You can ask me about KMM Travel, IslaKeys, Biz Buddy, AI Analytics Studio, the AI Resibo Maker or Future Minds Academy — or send a message through the portfolio's [contact form](https://garciaralphlawrence-svg.github.io/Ralph-Portfolio/#contact)." +
-        (s ? '\n\nTry: ' + s.suggestions.slice(0, 2).map(function (x) { return '“' + x + '”'; }).join(' or ') : '');
-    }
-    var lines = scored.map(function (x) { return '- ' + (x.c.site !== SITE ? '**' + x.c.siteName + ':** ' : '') + x.c.text; });
-    return "Here's what I found:\n\n" + lines.join('\n');
+  var INDEX = null;
+  function index() {
+    if (INDEX && INDEX.kb === KB) return INDEX;
+    var docs = [], df = {}, units = 0;
+    function count(toks) { units++; toks.forEach(function (t) { df[t] = (df[t] || 0) + 1; }); }
+    (KB.faq || []).forEach(function (f, i) {
+      var all = [];
+      f.q.forEach(function (v) {
+        // Score variants without the site's own name, the same way questions are scored.
+        (KB.sites[f.site].aliases || []).forEach(function (al) { v = (' ' + v.toLowerCase() + ' ').split(' ' + al + ' ').join(' '); });
+        var t = norm(v);
+        docs.push({ site: f.site, faq: f, toks: t, w: 1 });
+        t.forEach(function (x) { if (all.indexOf(x) === -1) all.push(x); });
+      });
+      var at = norm(f.a);
+      docs.push({ site: f.site, faq: f, toks: at, w: 0.75 }); // the answer itself, weaker
+      at.forEach(function (x) { if (all.indexOf(x) === -1) all.push(x); });
+      count(all);
+    });
+    (KB.chunks || []).forEach(function (c) {
+      var t = norm(c.text);
+      docs.push({ site: c.site, text: c.text, toks: t, w: 0.7 });
+      count(t);
+    });
+    var idf = {};
+    Object.keys(df).forEach(function (t) { idf[t] = Math.log(1 + units / df[t]); });
+    // Site names, longest first, so "spc studio" isn't also read as "studio".
+    var aliases = [];
+    Object.keys(KB.sites).forEach(function (k) {
+      (KB.sites[k].aliases || []).forEach(function (a) { aliases.push({ site: k, re: new RegExp('\\b' + a.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b'), len: a.length }); });
+    });
+    if (KB.sites.spc) aliases.push({ site: 'spc', re: /\bspc studio\b/, len: 10 });
+    aliases.sort(function (a, b) { return b.len - a.len; });
+    INDEX = { kb: KB, docs: docs, idf: idf, aliases: aliases };
+    return INDEX;
   }
-  function offlineFollowups() { var s = siteInfo(); return s ? s.suggestions.slice(0, 3) : []; }
+  function info(k) { return KB.sites[k] || KB.sites.portfolio || { name: 'this site', suggestions: [] }; }
+  // Which sites the question names, plus the question with those names taken out
+  // (so "where is biz buddy based" is scored as "where ... based", inside Biz Buddy).
+  function namedSites(q) {
+    var s = ' ' + q.toLowerCase().replace(/[’']/g, '') + ' ', found = [];
+    index().aliases.forEach(function (a) {
+      if (a.re.test(s)) { if (found.indexOf(a.site) === -1) found.push(a.site); s = s.replace(a.re, ' '); }
+    });
+    return { sites: found, rest: s };
+  }
+  // Filipino verb forms: macontact, magbook, nakapag-upload → contact, book, upload
+  function known(t, idf) {
+    if (idf[t]) return t;
+    var m = t.match(/^(nakapag|makapag|nakaka|makaka|naka|maka|nag|mag|pa|ma)(.{3,})$/);
+    if (m) { var r = SYN[m[2]] || m[2]; r = SYN[stem(r)] || stem(r); if (idf[r]) return r; }
+    return t;
+  }
+  function firstFaq(site) { var f = (KB.faq || []).filter(function (x) { return x.site === site; }); return f[0]; }
+  function label(site, text) { return site !== SITE ? '**' + info(site).name + ':** ' + text : text; }
+  function tryAsk(site) { var s = info(site).suggestions || []; return s.length ? ' Try asking “' + s.slice(0, 2).join('” or “') + '”.' : ''; }
+
+  var lastSite = SITE;
+  function offlineAnswer(q) {
+    if (!KB || !KB.sites) return "I'm having trouble loading my notes right now — please try again in a moment.";
+    var raw = String(q).trim(), low = raw.toLowerCase();
+    lastSite = SITE;
+    if (/^(hi+|hello+|hey+|yo|helo|kumusta|musta|good (morning|afternoon|evening|day))\b/.test(low) && raw.length < 30) {
+      return info(SITE).greeting || "Hi! I'm Kapitan 👋 How can I help?";
+    }
+    if (/^(thanks?|thank you|ty|tysm|salamat|maraming salamat)\b/.test(low)) return "You're welcome! 😊 Anything else I can help with?";
+    if (/\b(what can you do|what do you know|can you help|help me|who are you kapitan|what are you)\b/.test(low) || /^help\b/.test(low)) {
+      return "I'm Kapitan, the assistant for " + info(SITE).name + ". Ask me anything about it." + tryAsk(SITE);
+    }
+
+    var ix = index(), ns = namedSites(raw), named = ns.sites;
+    var qt = norm(named.length ? ns.rest : raw).map(function (t) { return known(t, ix.idf); });
+    if (named.length && !qt.length) { var ov = firstFaq(named[0]); if (ov) { lastSite = named[0]; return label(named[0], ov.a); } }
+    if (!qt.length) return "Could you tell me a bit more about what you're looking for?" + tryAsk(SITE);
+    var qW = 0;
+    qt.forEach(function (t) { qW += ix.idf[t] || 3; }); // unknown words count (and lower recall)
+
+    var best = null, second = null;
+    ix.docs.forEach(function (d) {
+      // Which sites may answer: a site the visitor names; else this site (the portfolio hub covers all).
+      var f;
+      if (named.length) f = named.indexOf(d.site) !== -1 ? 1 : 0;
+      else if (d.site === SITE) f = 1;
+      else if (d.site === 'fma') f = 0;
+      else f = SITE === 'portfolio' ? 0.9 : 0.6;
+      if (!f || !d.toks.length) return;
+      var m = 0, dW = 0;
+      d.toks.forEach(function (t) { var w = ix.idf[t] || 1; dW += w; if (qt.indexOf(t) !== -1) m += w; });
+      if (!m) return;
+      var R = m / qW, P = m / dW;
+      var s = (2 * R * P / (R + P)) * d.w * f;
+      if (!best || s > best.s) { second = best; best = { d: d, s: s }; }
+      else if (!second || s > second.s) second = { d: d, s: s };
+    });
+
+    if (named.length && (!best || best.s < 0.4)) {
+      // "what is islakeys?", "tell me about caresight" → that site's overview
+      var ff = firstFaq(named[0]);
+      if (ff) { lastSite = named[0]; return label(named[0], ff.a); }
+    }
+    if (!best || best.s < 0.34) {
+      return "I'm not sure about that one — I can only answer questions about " + info(SITE).name + '.' + tryAsk(SITE);
+    }
+    var d = best.d;
+    lastSite = d.site;
+    if (d.faq) return label(d.site, d.faq.a);
+    var text = d.text;
+    if (second && !second.d.faq && second.d.site === d.site && second.d.text !== text && second.s >= best.s * 0.9 && (text + second.d.text).length < 420) {
+      text += ' ' + second.d.text;
+    }
+    return label(d.site, text);
+  }
+  function offlineFollowups() { return (info(lastSite).suggestions || []).slice(0, 3); }
+  // BRAIN END
 
   // ---------- voice input ----------
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
