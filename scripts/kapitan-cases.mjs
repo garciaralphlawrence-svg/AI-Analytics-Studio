@@ -92,10 +92,13 @@ export const CASES = [
   ['caresight', 'how to reduce no shows', ['sms']],
 
   // ---- cross-site + edge cases ----
-  ['kmm', 'what is islakeys', ['propert']],
-  ['caresight', 'how much is the boracay package', ['12,500']],
+  // Each site's Kapitan stays on its own site; the portfolio hub covers all.
+  ['kmm', 'what is islakeys', ['only answer questions about it']],
+  ['portfolio', 'what is islakeys', ['propert']],
+  ['caresight', 'how much is the boracay package', ['only answer']],
+  ['portfolio', 'how much is the boracay package', ['12,500']],
   ['kmm', 'hello', ['kapitan']],
-  ['kmm', "what's the weather tomorrow", ["not sure"]],
-  ['studio', 'who won the nba finals', ["not sure"]],
+  ['kmm', "what's the weather tomorrow", ['only answer']],
+  ['studio', 'who won the nba finals', ['only answer']],
   ['bizbuddy', 'thanks!', ['welcome']],
 ];

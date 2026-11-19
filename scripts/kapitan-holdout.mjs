@@ -41,6 +41,6 @@ export const CASES = [
   ['portfolio', 'who made these websites', ['ralph']],
   ['portfolio', 'i want a website for my business', ['contact']],
   ['portfolio', 'what is biz buddy?', ['virtual assistant']],
-  ['kmm', 'what is the capital of france', ['not sure']],
-  ['caresight', 'tell me a joke', ['not sure']],
+  ['kmm', 'what is the capital of france', ['only answer']],
+  ['caresight', 'tell me a joke', ['only answer']],
 ];
