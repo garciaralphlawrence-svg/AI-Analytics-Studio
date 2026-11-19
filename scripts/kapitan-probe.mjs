@@ -50,7 +50,7 @@ export const ON_TOPIC = {
   islakeys: ['what is islakeys', 'can foreigners buy property', 'how do i contact a broker', 'what properties do you have', 'how do i sign up', 'are there fees'],
   bizbuddy: ['what is bizbuddy', 'how much is a va', 'how do i hire a va', 'how do i become a va', 'what tasks can a va do', 'is it safe'],
   comedian: ['when is the next show', 'how much are tickets', 'where is the venue', 'who is joseph', 'how do i book him', 'what time does the show start', 'magkano ticket', 'saan ang venue', 'is there parking', 'who else is performing'],
-  likha: ['how much is a website', 'do i pay monthly', 'how long does it take', 'what is k-hub', 'can you make a qr feedback system', 'who is ralph', 'how do i contact you', 'do you have a school system', 'what can you automate', 'can you make receipts', 'can you automate my excel reports', 'is it secure', 'can you generate certificates in bulk', 'what tools can i try'],
+  likha: ['how much is a website', 'do i pay monthly', 'how long does it take', 'what is k-hub', 'can you make a qr feedback system', 'who is ralph', 'how do i contact you', 'do you have a school system', 'what can you automate', 'can you make receipts', 'can you automate my excel reports', 'is it secure', 'can you generate certificates in bulk', 'what tools can i try', 'how many websites do you manage', 'do you help restaurants', 'how do i contact you'],
 };
 const OTHER_SITE = {
   kmm: ['what is caresight', 'how does spc studio work', 'how much is a va on bizbuddy'],
