@@ -285,7 +285,7 @@
     phone: 'contact', call: 'contact', email: 'contact', reach: 'contact', mobile: 'contact', telephone: 'contact', cellphone: 'contact', message: 'contact',
     secure: 'safe', security: 'safe', privacy: 'safe', private: 'safe', safety: 'safe',
     promo: 'discount', deal: 'discount',
-    owner: 'founder', ceo: 'founder', founded: 'founder',
+    owner: 'founder', own: 'founder', ceo: 'founder', founded: 'founder',
     location: 'where', located: 'where', address: 'where', office: 'where', area: 'where', saan: 'where', nasaan: 'where',
     foreigner: 'foreign', expat: 'foreign', american: 'foreign', korean: 'foreign', chinese: 'foreign', japanese: 'foreign', australian: 'foreign', british: 'foreign', indian: 'foreign', european: 'foreign', nationality: 'foreign', citizen: 'foreign',
     based: 'where', headquarter: 'where', hq: 'where',
@@ -298,12 +298,14 @@
     signin: 'login', register: 'signup', registration: 'signup',
     qualification: 'requirement',
     abroad: 'international', overseas: 'international',
+    trip: 'tour', trips: 'tour', vacation: 'tour', getaway: 'tour', biyahe: 'tour', excursion: 'tour', itinerary: 'tour',
+    computation: 'compute', calculation: 'compute', calculate: 'compute', computed: 'compute',
     ilang: 'many', ilan: 'many'
   };
   var PHRASES = [
     [/\bhow much\b|\bhm\b/g, ' price '], [/\bno[\s-]?shows?\b/g, ' noshow '], [/\bsign[\s-]?up\b/g, ' signup '],
     [/\blog[\s-]?in\b|\bsign[\s-]?in\b/g, ' login '], [/\bvirtual assistants?\b/g, ' va '], [/\bmag[\s-]?book\b/g, ' book '],
-    [/\be[\s-]?mail\b/g, ' email ']
+    [/\be[\s-]?mail\b/g, ' email '], [/\boutside (of )?(the )?(country|philippines|ph)\b/g, ' international '], [/\bhow long\b/g, ' duration ']
   ];
   function stem(w) {
     if (w.length > 4 && /ies$/.test(w)) return w.slice(0, -3) + 'y';
@@ -332,7 +334,7 @@
     var docs = [], df = {}, units = 0;
     function count(toks) { units++; toks.forEach(function (t) { df[t] = (df[t] || 0) + 1; }); }
     (KB.faq || []).forEach(function (f, i) {
-      var all = [];
+      var all = [], first = docs.length;
       f.q.forEach(function (v) {
         // Score variants without the site's own name, the same way questions are scored.
         (KB.sites[f.site].aliases || []).forEach(function (al) { v = (' ' + v.toLowerCase() + ' ').split(' ' + al + ' ').join(' '); });
@@ -343,11 +345,12 @@
       var at = norm(f.a);
       docs.push({ site: f.site, faq: f, toks: at, w: 0.75 }); // the answer itself, weaker
       at.forEach(function (x) { if (all.indexOf(x) === -1) all.push(x); });
+      for (var k = first; k < docs.length; k++) docs[k].all = all; // the whole entry, for the relevance check
       count(all);
     });
     (KB.chunks || []).forEach(function (c) {
       var t = norm(c.text);
-      docs.push({ site: c.site, text: c.text, toks: t, w: 0.7 });
+      docs.push({ site: c.site, text: c.text, toks: t, all: t, w: 0.7 });
       count(t);
     });
     var idf = {};
@@ -382,45 +385,86 @@
   function firstFaq(site) { var f = (KB.faq || []).filter(function (x) { return x.site === site; }); return f[0]; }
   function label(site, text) { return site !== SITE ? '**' + info(site).name + ':** ' + text : text; }
   function tryAsk(site) { var s = info(site).suggestions || []; return s.length ? ' Try asking “' + s.slice(0, 2).join('” or “') + '”.' : ''; }
+  function siteName() { return info(SITE).name.replace(/\.+$/, ''); }
+  // Polite "that's not something I cover" — Kapitan never guesses outside its own website.
+  function decline() { return "Sorry, I can only answer questions about **" + siteName() + "**, and I don't have information on that." + tryAsk(SITE); }
+  // The portfolio is the hub that presents every project; every other site answers only about itself.
+  var HUB = SITE === 'portfolio';
+  // Words too general to justify an answer on their own ("what time is it", "best phone").
+  var GENERIC = {};
+  ('time best good nice new today now tomorrow yesterday nearest near day week year thing stuff people person way fix ' +
+   'old young big small high low like love buy sell real right wrong well better').split(' ').forEach(function (w) { GENERIC[w] = 1; GENERIC[stem(w)] = 1; });
+  // Everyday question words that may not appear on the site but don't change what is being asked.
+  var HELPER = {};
+  ('mean meaning accept online people number help use need work way available availability possible option allow also really exactly ' +
+   'able start do give get go make take see look find show tell explain info information detail question ask kind type sort include ' +
+   'offer provide support still already please kindly sir maam opo anyone someone something anything everything other else another ' +
+   'more less most first last next before after again same different much many there their thing kailan bakit gaano alin ' +
+   'right wrong yes true exist happen join part step process option options mine ours can want wish handle manage accept limit duration long compute total amount').split(' ').forEach(function (w) { HELPER[w] = 1; HELPER[stem(w)] = 1; });
+  // Topics that are never about one of these websites, unless the site itself uses the word.
+  var OFFTOPIC = /\b(weather|rain(ing)?|typhoon|bagyo|panahon|recipes?|cook(ing)?|luto|magluto|ulam|adobo|sinigang|jokes?|biro|president|presidente|pangulo|elections?|senator|politics?|bitcoin|crypto|stocks?|forex|horoscope|zodiac|movies?|netflix|songs?|lyrics|homework|assignment|essay|thesis|translate|spanish|french|symptoms?|dengue|covid|fever|medicine|doctor|lose weight|diet|girlfriend|boyfriend|crush|nba|pba|basketball|football|soccer|games?|capital of|passport|visa|car|motorcycle|iphone|android|samsung|laptop to buy|chatgpt|gemini|pizza|burger|big mac|love advice|relationship|nearest|near me|nearby|jollibee|mcdo|math|2\s*\+\s*2|\d+\s*[-+*\/x]\s*\d+)\b/;
+
+  // Does this site's knowledge (all sites, for the hub) use this word?
+  var VOCAB = null;
+  function siteHas(t) {
+    if (!VOCAB || VOCAB.kb !== KB) {
+      VOCAB = { kb: KB, w: {} };
+      index().docs.forEach(function (d) { if (HUB || d.site === SITE) d.toks.forEach(function (x) { VOCAB.w[x] = 1; }); });
+    }
+    return !!VOCAB.w[t];
+  }
 
   var lastSite = SITE;
   function offlineAnswer(q) {
     if (!KB || !KB.sites) return "I'm having trouble loading my notes right now — please try again in a moment.";
-    var raw = String(q).trim(), low = raw.toLowerCase();
+    var raw = String(q).trim(), low = raw.toLowerCase().replace(/[’']/g, '');
     lastSite = SITE;
     if (/^(hi+|hello+|hey+|yo|helo|kumusta|musta|good (morning|afternoon|evening|day))\b/.test(low) && raw.length < 30) {
       return info(SITE).greeting || "Hi! I'm Kapitan 👋 How can I help?";
     }
     if (/^(thanks?|thank you|ty|tysm|salamat|maraming salamat)\b/.test(low)) return "You're welcome! 😊 Anything else I can help with?";
-    if (/\b(what can you do|what do you know|can you help|help me|who are you kapitan|what are you)\b/.test(low) || /^help\b/.test(low)) {
-      return "I'm Kapitan, the assistant for " + info(SITE).name + ". Ask me anything about it." + tryAsk(SITE);
+    if (/^(help|can you help( me)?|help me|what can you do|what do you know|who are you( kapitan)?|what are you|ano kaya mo|anong alam mo)\s*[?.!]*$/.test(low)) {
+      return "I'm Kapitan, the assistant for " + siteName() + ". Ask me anything about it." + tryAsk(SITE);
     }
 
     var ix = index(), ns = namedSites(raw), named = ns.sites;
+    // Asking this site's Kapitan about one of Ralph's other sites → stay on this site.
+    if (!HUB && named.length && named.indexOf(SITE) === -1) {
+      return "I'm the assistant for **" + siteName() + "**, so I can only answer questions about it." + tryAsk(SITE);
+    }
+    // The site's own name ("what does caresight do") is taken out before scoring.
     var qt = norm(named.length ? ns.rest : raw).map(function (t) { return known(t, ix.idf); });
+    if (!HUB) named = [];
+    if (!HUB && !qt.length && ns.sites.indexOf(SITE) !== -1 && firstFaq(SITE)) return firstFaq(SITE).a;
     if (named.length && !qt.length) { var ov = firstFaq(named[0]); if (ov) { lastSite = named[0]; return label(named[0], ov.a); } }
     // "who is he?" / "sino siya?" on a person's site → the overview
     if (!qt.length && /\b(who|sino)\b/.test(low) && firstFaq(SITE)) return firstFaq(SITE).a;
-    if (!qt.length) return "Could you tell me a bit more about what you're looking for?" + tryAsk(SITE);
+    if (!qt.length) return decline();
+    // Clearly off-topic subjects (weather, recipes, politics, homework…) — unless this site talks about them.
+    var off = low.match(OFFTOPIC);
+    if (off && !norm(off[0]).every(function (t) { return siteHas(t); })) return decline();
     var qW = 0;
     qt.forEach(function (t) { qW += ix.idf[t] || 3; }); // unknown words count (and lower recall)
 
     var best = null, second = null;
     ix.docs.forEach(function (d) {
-      // Which sites may answer: a site the visitor names; else this site (the portfolio hub covers all).
+      // Which sites may answer: a site the visitor names (hub only); else this site only.
       var f;
       if (named.length) f = named.indexOf(d.site) !== -1 ? 1 : 0;
       else if (d.site === SITE) f = 1;
-      else if (d.site === 'fma') f = 0;
-      else f = SITE === 'portfolio' ? 0.9 : 0.6;
+      else if (!HUB || d.site === 'fma') f = 0;
+      else f = 0.9;
       if (!f || !d.toks.length) return;
-      var m = 0, dW = 0;
-      d.toks.forEach(function (t) { var w = ix.idf[t] || 1; dW += w; if (qt.indexOf(t) !== -1) m += w; });
+      var m = 0, dW = 0, hit = [];
+      d.toks.forEach(function (t) { var w = ix.idf[t] || 1; dW += w; if (qt.indexOf(t) !== -1) { m += w; hit.push(t); } });
       if (!m) return;
       var R = m / qW, P = m / dW;
       var s = (2 * R * P / (R + P)) * d.w * f;
-      if (!best || s > best.s) { second = best; best = { d: d, s: s }; }
-      else if (!second || s > second.s) second = { d: d, s: s };
+      var mAll = 0, hitAll = [];
+      qt.forEach(function (t) { if (d.all.indexOf(t) !== -1) { mAll += ix.idf[t] || 1; hitAll.push(t); } });
+      var cand = { d: d, s: s, R: mAll / qW, hit: hitAll };
+      if (!best || s > best.s) { second = best; best = cand; }
+      else if (!second || s > second.s) second = cand;
     });
 
     if (named.length && (!best || best.s < 0.4)) {
@@ -428,9 +472,16 @@
       var ff = firstFaq(named[0]);
       if (ff) { lastSite = named[0]; return label(named[0], ff.a); }
     }
-    if (!best || best.s < 0.34) {
-      return "I'm not sure about that one — I can only answer questions about " + info(SITE).name + '.' + tryAsk(SITE);
-    }
+    // Relevance check: enough of the question must be about this site, and not only generic words.
+    // On-site share: how much of the question uses words this site actually talks about.
+    var onW = 0;
+    qt.forEach(function (t) { if (siteHas(t)) onW += ix.idf[t] || 1; });
+    // A strong match on a specific word ("what does cpk mean") is kept even if a helper word is unfamiliar.
+    var strong = best && best.s >= 0.55;
+    // Any specific word this site never talks about ("planets", "shoes", "password") means it's not about this site.
+    var foreign = qt.filter(function (t) { return !siteHas(t) && !HELPER[t] && !GENERIC[t]; });
+    if (foreign.length) return decline();
+    if (!best || best.s < 0.34 || (!strong && (best.R < 0.3 || onW / qW < 0.6)) || best.hit.every(function (t) { return GENERIC[t]; })) return decline();
     var d = best.d;
     lastSite = d.site;
     if (d.faq) return label(d.site, d.faq.a);
