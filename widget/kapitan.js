@@ -4,6 +4,8 @@
  * data-site: portfolio | studio | kmm | islakeys | bizbuddy
  * data-api: origin of the AI backend (default: the script's own origin)
  * data-position: right (default) | left — use left when the page already has UI in the bottom-right corner.
+ * data-open: "true" opens the chat on load, "expanded" opens it large (for a standalone Kapitan page).
+ * window.KAPITAN_KB: a page can supply its own knowledge (same shape as kb.json) instead of the shared kb.json.
  * Everything renders inside a shadow root, so host-page CSS can't leak in or out.
  */
 (function () {
@@ -58,7 +60,7 @@
     '<section class="panel" role="dialog" aria-label="Kapitan chat" aria-hidden="true">' +
       '<header>' +
         '<span class="orb sm"><span class="orb-core"></span></span>' +
-        '<div class="title"><strong>Kapitan</strong><span class="status"><i></i><em>Online · knows all these websites</em></span></div>' +
+        '<div class="title"><strong>Kapitan</strong><span class="status"><i></i><em>Online · instant answers</em></span></div>' +
         '<button class="icon expand" title="Expand" aria-label="Expand chat">' + ICON.expand + '</button>' +
         '<button class="icon reset" title="New chat" aria-label="Start a new chat">' + ICON.refresh + '</button>' +
         '<button class="icon close" title="Close" aria-label="Close chat">' + ICON.close + '</button>' +
@@ -86,7 +88,7 @@
   // chatting — that would wipe an answer that is still streaming in.
   if (history.length) renderHistory();
   var greetIfIdle = function () { if (!history.length && !body.children.length) greet(); };
-  fetch(ASSETS + '/kb.json').then(function (r) { return r.json(); }).then(function (kb) {
+  (window.KAPITAN_KB ? Promise.resolve(window.KAPITAN_KB) : fetch(ASSETS + '/kb.json').then(function (r) { return r.json(); })).then(function (kb) {
     KB = kb;
     var si = siteInfo();
     if (si) input.placeholder = 'Ask about ' + si.name.replace(/ —.*$/, '').replace(/\.$/, '') + '…';
@@ -109,6 +111,10 @@
     launcher.focus();
   }
   launcher.addEventListener('click', open);
+  var autoOpen = script.getAttribute('data-open');
+  if (autoOpen === 'true' || autoOpen === 'expanded') {
+    setTimeout(function () { open(); if (autoOpen === 'expanded') panel.classList.add('expanded'); }, 400);
+  }
   $('.close').addEventListener('click', close);
   $('.expand').addEventListener('click', function () { panel.classList.toggle('expanded'); });
   $('.reset').addEventListener('click', function () {
@@ -270,7 +276,7 @@
   ('a an the and or of to in on at for with is are was were be been do does did how what who when which can could would should will ' +
    'i you me my your yours our we us it its this that these those about tell show please he his him she her they them there here ' +
    'have has had am get got any some just also like want need know there s whats im ok okay pls po ba ang ng sa mga ko mo na ka kayo ' +
-   'nyo yung ung lang naman pa si ni din rin may meron ano anong paano pano panu sino pwede puwede kaya ito to yan').split(' ').forEach(function (w) { STOP[w] = 1; });
+   'nyo yung ung lang naman pa si ni din rin may meron ano anong paano pano panu sino pwede puwede kaya ito to yan siya sya niya nya').split(' ').forEach(function (w) { STOP[w] = 1; });
   // Same meaning → same token (English, Filipino and Taglish).
   var SYN = {
     cost: 'price', costs: 'price', fee: 'price', fees: 'price', rate: 'price', rates: 'price', pricing: 'price', presyo: 'price', much: 'price', expensive: 'price', magkano: 'price',
@@ -393,6 +399,8 @@
     var ix = index(), ns = namedSites(raw), named = ns.sites;
     var qt = norm(named.length ? ns.rest : raw).map(function (t) { return known(t, ix.idf); });
     if (named.length && !qt.length) { var ov = firstFaq(named[0]); if (ov) { lastSite = named[0]; return label(named[0], ov.a); } }
+    // "who is he?" / "sino siya?" on a person's site → the overview
+    if (!qt.length && /\b(who|sino)\b/.test(low) && firstFaq(SITE)) return firstFaq(SITE).a;
     if (!qt.length) return "Could you tell me a bit more about what you're looking for?" + tryAsk(SITE);
     var qW = 0;
     qt.forEach(function (t) { qW += ix.idf[t] || 3; }); // unknown words count (and lower recall)
